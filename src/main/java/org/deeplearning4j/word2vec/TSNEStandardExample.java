@@ -28,6 +28,14 @@ public class TSNEStandardExample {
 
         List<String> cacheList = new ArrayList<>();
 
+        log.info("Load & Vectorize data....");
+        Pair<InMemoryLookupTable,VocabCache> vectors = WordVectorSerializer.loadTxt(new File(args[0]));
+        VocabCache cache = vectors.getSecond();
+        INDArray weights = vectors.getFirst().getSyn0();
+
+        for(int i = 0; i < cache.numWords(); i++)
+            cacheList.add(cache.wordAtIndex(i));
+
         log.info("Build model....");
         Tsne tsne = new Tsne.Builder()
                 .setMaxIter(10000)
@@ -36,14 +44,6 @@ public class TSNEStandardExample {
                 .useAdaGrad(false)
                 .usePca(false)
                 .build();
-
-        log.info("Load & Vectorize data....");
-        Pair<InMemoryLookupTable,VocabCache> vectors = WordVectorSerializer.loadTxt(new File(args[0]));
-        VocabCache cache = vectors.getSecond();
-        INDArray weights = vectors.getFirst().getSyn0();
-
-        for(int i = 0; i < cache.numWords(); i++)
-            cacheList.add(cache.wordAtIndex(i));
 
         log.info("Store TSNE Coordinates for Plotting....");
         tsne.plot(weights,2,cacheList,"target/archive-tmp/tsne-create-data-coords.csv");

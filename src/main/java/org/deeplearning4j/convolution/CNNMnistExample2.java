@@ -47,7 +47,7 @@ public class CNNMnistExample2 {
     private static final int numColumns = 28;
 
     @Option(name="-samples", usage="number of samples to get")
-    private static int numSamples = 100;
+    private static int numSamples = 10;
 
     @Option(name="-batch", usage="batch size for training" )
     private static int batchSize = 10;
@@ -62,7 +62,7 @@ public class CNNMnistExample2 {
     private static int hLayerSize = 18;
 
     @Option(name="-iterations", usage="number of iterations to train the layer")
-    private static int iterations = 20;
+    private static int iterations = 10;
 
     private static double numTrainSamples = numSamples * 0.8;
     private static double numTestSamples = numSamples - numTrainSamples;
@@ -113,13 +113,13 @@ public class CNNMnistExample2 {
     }
 
     static MultiLayerNetwork trainModel(DataSetIterator data, MultiLayerNetwork model){
-        Nd4j.MAX_SLICES_TO_PRINT = 5;
+        Nd4j.MAX_SLICES_TO_PRINT = 10;
         Nd4j.MAX_ELEMENTS_PER_SLICE = 10;
         while (data.hasNext()){
             DataSet allData = data.next();
             allData.normalizeZeroMeanZeroUnitVariance();
-//            INDArray labels = allData.getLabels();
-//            log.info(labels.toString());
+            INDArray labels = allData.getLabels();
+            log.info(labels.toString());
             model.fit(allData);
 
         }
@@ -128,13 +128,25 @@ public class CNNMnistExample2 {
     }
 
     static void evaluateModel(DataSetIterator data, MultiLayerNetwork model) {
+        Nd4j.MAX_SLICES_TO_PRINT = 10;
+        Nd4j.MAX_ELEMENTS_PER_SLICE = 10;
+
         Evaluation eval = new Evaluation();
         DataSet allTest = data.next();
         INDArray testInput = allTest.getFeatureMatrix();
         INDArray testLabels = allTest.getLabels();
         INDArray output = model.output(testInput);
+
+        log.info("DATA************");
+        log.info(testLabels.toString());
+        log.info(output.toString());
+
         eval.eval(testLabels, output);
         log.info(eval.stats());
+        log.info("Precision: " + eval.precision());
+        log.info("Recall: " + eval.recall());
+        log.info("Accuracy: " + eval.accuracy());
+
     }
 
     public void exec(String[] args) throws Exception {
