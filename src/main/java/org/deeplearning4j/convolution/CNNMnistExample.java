@@ -38,7 +38,9 @@ public class CNNMnistExample {
 
         final int numRows = 28;
         final int numColumns = 28;
+        int numSamples = 100;
         int batchSize = 10;
+        int iterations = 5;
         DataSet mnist;
         SplitTestAndTrain trainTest;
         DataSet trainInput;
@@ -47,20 +49,21 @@ public class CNNMnistExample {
 
 
         log.info("Load data....");
-        DataSetIterator mnistIter = new MnistDataSetIterator(100,1000);
+        DataSetIterator mnistIter = new MnistDataSetIterator(batchSize,numSamples);
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .nIn(numRows * numColumns)
                 .nOut(10)
                 .batchSize(batchSize)
-                .iterations(4)
+                .iterations(iterations)
                 .weightInit(WeightInit.UNIFORM)
                 .activationFunction("sigmoid")
-                .filterSize(7, 1, numRows, numColumns)
+                .filterSize(8, 1, numRows, numColumns)
                 .optimizationAlgo(OptimizationAlgorithm.LBFGS)
                 .constrainGradientToUnitNorm(true)
-                .list(3).hiddenLayerSizes(new int[]{50})
+                .list(3)
+                .hiddenLayerSizes(new int[]{50})
                 .inputPreProcessor(0, new ConvolutionInputPreProcessor(numRows, numColumns))
                 .preProcessor(1, new ConvolutionPostProcessor())
                 .override(0, new ConfOverride() {
@@ -79,11 +82,12 @@ public class CNNMnistExample {
         model.init();
 
         log.info("Train model....");
-        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(1)));
+        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+//        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(1)));
         while(mnistIter.hasNext()) {
             mnist = mnistIter.next();
             mnist.normalizeZeroMeanZeroUnitVariance();
-            trainTest = mnist.splitTestAndTrain(90); // train set that is the result
+            trainTest = mnist.splitTestAndTrain((int) (mnist.numExamples()*.8)); // train set that is the result
             trainInput = trainTest.getTrain(); // get feature matrix and labels for training
             testInput.add(trainTest.getTest().getFeatureMatrix());
             testLabels.add(trainTest.getTest().getLabels());

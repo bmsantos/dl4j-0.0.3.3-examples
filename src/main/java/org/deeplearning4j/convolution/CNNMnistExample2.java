@@ -47,10 +47,10 @@ public class CNNMnistExample2 {
     private static final int numColumns = 28;
 
     @Option(name="-samples", usage="number of samples to get")
-    private static int numSamples = 10;
+    private static int numSamples = 100;
 
     @Option(name="-batch", usage="batch size for training" )
-    private static int batchSize = 10;
+    private static int batchSize = 100;
 
     @Option(name="-featureMap", usage="size of feature map. Just enter single value")
     int featureMapSize = 5;
@@ -81,7 +81,7 @@ public class CNNMnistExample2 {
                 .batchSize(batchSize)
                 .iterations(iterations)
                 .weightInit(WeightInit.ZERO)
-                .rng(new DefaultRandom(7))
+                .rng(new DefaultRandom(3L))
                 .activationFunction("sigmoid")
                 .filterSize(8, 1, numRows, numColumns)
                 .lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
@@ -118,18 +118,17 @@ public class CNNMnistExample2 {
         while (data.hasNext()){
             DataSet allData = data.next();
             allData.normalizeZeroMeanZeroUnitVariance();
-            INDArray labels = allData.getLabels();
-            log.info(labels.toString());
+//            INDArray labels = allData.getLabels();
+//            log.info(labels.toString());
             model.fit(allData);
-
         }
         return model;
-
     }
 
     static void evaluateModel(DataSetIterator data, MultiLayerNetwork model) {
         Nd4j.MAX_SLICES_TO_PRINT = 10;
         Nd4j.MAX_ELEMENTS_PER_SLICE = 10;
+        data.reset();
 
         Evaluation eval = new Evaluation();
         DataSet allTest = data.next();
@@ -137,15 +136,12 @@ public class CNNMnistExample2 {
         INDArray testLabels = allTest.getLabels();
         INDArray output = model.output(testInput);
 
-        log.info("DATA************");
-        log.info(testLabels.toString());
-        log.info(output.toString());
+//        log.info("DATA************");
+//        log.info(testLabels.toString());
+//        log.info(output.toString());
 
         eval.eval(testLabels, output);
         log.info(eval.stats());
-        log.info("Precision: " + eval.precision());
-        log.info("Recall: " + eval.recall());
-        log.info("Accuracy: " + eval.accuracy());
 
     }
 
@@ -168,7 +164,7 @@ public class CNNMnistExample2 {
         MultiLayerNetwork model = buildModel(featureMapSize);
 
         log.info("Train model....");
-        trainModel(dataIter, model);
+        model = trainModel(dataIter, model);
 
         log.info("Evaluate model....");
         DataSetIterator testData = loadData((int) numTestSamples, (int) numTestSamples);

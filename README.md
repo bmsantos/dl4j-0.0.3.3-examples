@@ -1,6 +1,6 @@
 DL4J Examples 
 =========================
-*(based on version 0.0.3.3)*
+*(based on version 0.0.3.3.\*)*
 
 Repository of Deeplearning4J neural net examples:
 
@@ -16,6 +16,8 @@ Repository of Deeplearning4J neural net examples:
 ## Development
 We are in progress of developing and tuning these examples. If you notice issues, please log, and if you want to contribute, submit a pull request. Input is definitely welcome.
 
+Check the pom to confirm where these examples are running from. If it has SNAPSHOT in the dl4j and nd4j then git clone those repositories and build locally. Otherwise use Maven Repo. We are working to get this stabilized as quickly as possibe.
+
 ---
 ## Documentation
 For more information, check out [deeplearning4j.org](http://deeplearning4j.org/) and [JavaDocs](http://deeplearning4j.org/doc/).
@@ -26,8 +28,8 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 | **Model Name**      | **Score** | **Status**   | **Training**  |
 |---------------------|-----------|--------------|---------------|
 | CNNIris             | F1 0.14   | Tune         | batch         |
-| CNNMnist            | F1 0.013  | Tune         | batch         |
-| CNNMnist2           | F1 0.03   | Tune         | batch         |
+| CNNMnist            | F1 0.02   | Tune         | batch         |
+| CNNMnist2           | F1 0.02   | Tune         | batch         |
 | DBNCreateData       | F1 0.33   | Tune         | batch         |          	
 | DBNFullMnist        | F1 0.18   | Tune         | full          |
 | DBNIris             | F1 0.15   | Tune         | full          |
@@ -47,5 +49,4 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 | Word2VecRawText     | Sim 0     | Tune         | batch         |
     
 
-Starting to add rng to lock in results. 
-RNTN rng needs to be fixed. Issue logged but F1 scores will vary. Posting what we got recently.
+F1 scores are varying on different runs. Starting to add rng to help stabilize results some examples require rng fix. 

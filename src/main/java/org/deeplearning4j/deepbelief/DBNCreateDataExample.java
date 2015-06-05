@@ -34,6 +34,7 @@ public class DBNCreateDataExample {
 
     public static void main(String... args) throws Exception {
         int numFeatures = 614;
+        int iterations = 5;
 
         log.info("Load data....");
         // have to be at least two or else output layer gradient is a scalar and cause exception
@@ -58,14 +59,14 @@ public class DBNCreateDataExample {
                 .nIn(trainingSet.numInputs())
                 .nOut(trainingSet.numOutcomes())
                 .weightInit(WeightInit.DISTRIBUTION)
-                .dist(new NormalDistribution(0, 1))
+                .dist(new NormalDistribution(0,1))
                 .constrainGradientToUnitNorm(true)
-                .iterations(10)
+                .iterations(iterations)
                 .activationFunction("tanh")
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
+                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
-                .learningRate(1e-1f)
+                .learningRate(1e-2f)
                 .optimizationAlgo(OptimizationAlgorithm.ITERATION_GRADIENT_DESCENT)
                 .list(2)
                 .hiddenLayerSizes(400)
@@ -79,14 +80,14 @@ public class DBNCreateDataExample {
         model.fit(trainingSet);
 
         log.info("Evaluate model....");
-        INDArray predict2 = model.output(trainingSet.getFeatureMatrix());
-        for (int i = 0; i < predict2.rows(); i++) {
+        INDArray predictedMatrix = model.output(trainingSet.getFeatureMatrix());
+        for (int i = 0; i < predictedMatrix.rows(); i++) {
             String actual = trainingSet.getLabels().getRow(i).toString().trim();
-            String predicted = predict2.getRow(i).toString().trim();
+            String predicted = predictedMatrix.getRow(i).toString().trim();
             log.info("actual " + actual + " vs predicted " + predicted);
         }
         Evaluation eval = new Evaluation();
-        eval.eval(trainingSet.getLabels(), predict2);
+        eval.eval(trainingSet.getLabels(), predictedMatrix);
         log.info(eval.stats());
 
         log.info("****************Example finished********************");

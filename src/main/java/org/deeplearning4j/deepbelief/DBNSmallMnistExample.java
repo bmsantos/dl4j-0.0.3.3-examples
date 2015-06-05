@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 
 /**
@@ -33,18 +34,24 @@ public class DBNSmallMnistExample {
 
     public static void main(String[] args) throws Exception {
 
+        final int numRows = 28;
+        final int numColumns = 28;
+        int numSamples = 10;
+        int batchSize = 10;
+        int iterations = 5;
+
         log.info("Load data....");
-        DataSetIterator iter = new MultipleEpochsIterator(5, new MnistDataSetIterator(1000,1000));
+        DataSetIterator iter = new MultipleEpochsIterator(5, new MnistDataSetIterator(batchSize,numSamples));
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .layer(new RBM())
-                .nIn(784)
+                .nIn(numRows * numColumns)
                 .nOut(10)
                 .weightInit(WeightInit.DISTRIBUTION)
                 .dist(new UniformDistribution(1e-3, 1e-1))
                 .constrainGradientToUnitNorm(true)
-                .iterations(5)
+                .iterations(iterations)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .learningRate(1e-1f)
                 .list(4)
@@ -54,7 +61,7 @@ public class DBNSmallMnistExample {
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(1)));
+        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
 
         log.info("Train model....");
         model.fit(iter);
