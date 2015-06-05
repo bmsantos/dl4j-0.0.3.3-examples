@@ -8,8 +8,8 @@
     <name>DeepLearning4j Examples</name>
     <description>Examples of training different data sets</description>
     <properties>
-        <nd4j.version>0.0.3.5.5.5</nd4j.version>
-        <dl4j.version>0.0.3.3.4.alpha2</dl4j.version>
+        <nd4j.version>0.0.3.5.5.5-SNAPSHOT</nd4j.version>
+        <dl4j.version>0.0.3.3.5.alpha2-SNAPSHOT</dl4j.version>
         <canova.version>0.0.0.4</canova.version>
 
     </properties>

@@ -28,12 +28,10 @@ import java.util.*;
 
 public class RNTNTweetsExample2 {
 
+    private String fileName = "sentiment-tweets-small.csv";
     private static final Logger log = LoggerFactory.getLogger(RNTNTweetsExample2.class);
-
-//    private static String fileName = "tweets_clean.txt";
     private static SentenceIterator sentenceIter;
     private static TreeVectorizer vectorizer;
-    private static String fileName = "sentiment-tweets-small.csv";
     private static int batchSize = 1000;
     private static List<String> labels = new ArrayList<>();
 
@@ -81,6 +79,7 @@ public class RNTNTweetsExample2 {
 
     static RNTN trainModel(RNTN model) throws Exception {
         int count = 0;
+        sentenceIter.reset();
         vectorizer = new TreeVectorizer();
 
         while(sentenceIter.hasNext()) {
@@ -92,12 +91,14 @@ public class RNTNTweetsExample2 {
 
     static void evalModel(RNTN model) throws Exception {
         int count = 0;
+        sentenceIter.reset();
         // Evaluate per node - each sentence is a parse tree
         RNTNEval eval = new RNTNEval();
 
-        while(sentenceIter.hasNext());
+        while (sentenceIter.hasNext()) {
             List<Tree> treeList = vectorizer.getTreesWithLabels(sentenceIter.nextSentence(), Arrays.asList(labels.get(count++)));
-        eval.eval(model, treeList);
+            eval.eval(model, treeList);
+        }
         log.info(eval.stats());
     }
 
@@ -112,8 +113,10 @@ public class RNTNTweetsExample2 {
             parser.printUsage(System.err);
         }
 
-        log.info("Load & vectorize data....");
+        log.info("Load data....");
         loadData();
+
+        log.info("Vectorize data....");
         Word2Vec featureVec = buildVectors();
 
         log.info("Build model....");
@@ -126,6 +129,8 @@ public class RNTNTweetsExample2 {
         log.info("Evaluate model....");
         sentenceIter.reset();
         evalModel(model);
+
+        model.shutdown();
 
         log.info("****************Example finished********************");
 

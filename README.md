@@ -40,10 +40,12 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 | RBMIris             | NA        | Validate     | full          |
 | RecurrentLSTMMnist  | NA        | Validate     | batch         |
 | RecursiveAutoEncoder| NA        | Validate     | batch         |
-| RNTNTweets          |           | Not working  | batch         |
-| RNTNTweets2         |           | Not working  | batch         |
+| RNTNTweets          | F1 0.48   | Tune         | batch         |
+| RNTNTweets2         | F1 0.48   | Tune         | batch         |
 | TSNEBarnesHut       | NA        | Not working  | NA            |
 | TSNEStandard        | NA        | Not working  | NA            |
 | Word2VecRawText     | Sim 0     | Tune         | batch         |
     
 
+Starting to add rng to lock in results. 
+RNTN rng needs to be fixed. Issue logged but F1 scores will vary. Posting what we got recently.
