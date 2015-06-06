@@ -44,8 +44,8 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 | RecursiveAutoEncoder| NA        | Validate     | batch         |
 | RNTNTweets          | F1 0.48   | Tune         | batch         |
 | RNTNTweets2         | F1 0.48   | Tune         | batch         |
-| TSNEBarnesHut       | NA        | Not working  | NA            |
-| TSNEStandard        | NA        | Not working  | NA            |
+| TSNEBarnesHut       | NA        | Validate     | NA            |
+| TSNEStandard        | NA        | Validate     | NA            |
 | Word2VecRawText     | Sim 0     | Tune         | batch         |
     
 

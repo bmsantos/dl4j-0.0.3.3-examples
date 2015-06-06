@@ -1,4 +1,4 @@
-package org.deeplearning4j.word2vec;
+package org.deeplearning4j.tsne;
 
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
@@ -8,6 +8,7 @@ import org.deeplearning4j.plot.Tsne;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -17,8 +18,6 @@ import java.util.List;
  * Created by agibsonccc on 9/20/14.
  *
  * Dimensionality reduction for high-dimension datasets
- * Pass in words.txt at CLI
- *
  */
 public class TSNEStandardExample {
 
@@ -29,7 +28,8 @@ public class TSNEStandardExample {
         List<String> cacheList = new ArrayList<>();
 
         log.info("Load & Vectorize data....");
-        Pair<InMemoryLookupTable,VocabCache> vectors = WordVectorSerializer.loadTxt(new File(args[0]));
+        File wordFile = new ClassPathResource("words.txt").getFile();
+        Pair<InMemoryLookupTable,VocabCache> vectors = WordVectorSerializer.loadTxt(wordFile);
         VocabCache cache = vectors.getSecond();
         INDArray weights = vectors.getFirst().getSyn0();
 
@@ -38,7 +38,7 @@ public class TSNEStandardExample {
 
         log.info("Build model....");
         Tsne tsne = new Tsne.Builder()
-                .setMaxIter(10000)
+                .setMaxIter(1000)
                 .normalize(false)
                 .learningRate(500)
                 .useAdaGrad(false)
@@ -46,7 +46,7 @@ public class TSNEStandardExample {
                 .build();
 
         log.info("Store TSNE Coordinates for Plotting....");
-        tsne.plot(weights,2,cacheList,"target/archive-tmp/tsne-create-data-coords.csv");
+        tsne.plot(weights,2,cacheList,"target/archive-tmp/tsne-standard-coords.csv");
     }
 
 
