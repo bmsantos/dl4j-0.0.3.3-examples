@@ -14,15 +14,13 @@ Repository of Deeplearning4J neural net examples:
 
 ---
 ## Development
-We are in progress of developing and tuning these examples. If you notice issues, please log, and if you want to contribute, submit a pull request. Input is definitely welcome.
+We are still developing and tuning these examples. If you notice issues, please log them, and if you want to contribute, submit a pull request. Input is welcome here.
 
-Check the pom to confirm where these examples are running from. If it has SNAPSHOT in the dl4j and nd4j then git clone those repositories and build locally. Otherwise use Maven Repo. We are working to get this stabilized as quickly as possibe.
+Check the POM to confirm where these examples are running from. If it has SNAPSHOT in the dl4j and nd4j then *git clone* those repositories and build locally. Otherwise use Maven Repo. We are working to get this stabilized as quickly as possible.
 
----
 ## Documentation
-For more information, check out [deeplearning4j.org](http://deeplearning4j.org/) and [JavaDocs](http://deeplearning4j.org/doc/).
+For more information, check out [deeplearning4j.org](http://deeplearning4j.org/) and its [JavaDoc](http://deeplearning4j.org/doc/).
 
----
 ## Performance
 
 | **Model Name**      | **Score** | **Status**   | **Training**  |
@@ -49,4 +47,4 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 | Word2VecRawText     | Sim 0     | Tune         | batch         |
     
 
-F1 scores are varying on different runs. Starting to add rng to help stabilize results some examples require rng fix. 
+F1 scores vary with each run. We're starting to add **rng** to help stabilize results. Some examples still require an rng fix. 
