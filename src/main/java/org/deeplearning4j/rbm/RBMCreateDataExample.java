@@ -1,11 +1,15 @@
 package org.deeplearning4j.rbm;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.conf.layers.RBM;
-import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.gradient.Gradient;
 import org.deeplearning4j.nn.layers.factory.LayerFactories;
+import org.deeplearning4j.nn.params.DefaultParamInitializer;
+import org.deeplearning4j.nn.params.PretrainParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
@@ -15,16 +19,45 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.*;
 
 public class RBMCreateDataExample {
 
     private static Logger log = LoggerFactory.getLogger(RBMCreateDataExample.class);
 
+    protected static String writeMatrix(INDArray matrix) throws IOException {
+        String filePath = System.getProperty("java.io.tmpdir") + File.separator + UUID.randomUUID().toString();
+        File write = new File(filePath);
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(write,true));
+        write.deleteOnExit();
+        for(int i = 0; i < matrix.rows(); i++) {
+            INDArray row = matrix.getRow(i);
+            StringBuilder sb = new StringBuilder();
+            for(int j = 0; j < row.length(); j++) {
+                sb.append(String.format("%.10f", row.getDouble(j)));
+                if(j < row.length() - 1)
+                    sb.append(",");
+            }
+            sb.append("\n");
+            String line = sb.toString();
+            bos.write(line.getBytes());
+            bos.flush();
+        }
+
+        bos.close();
+        return filePath;
+    }
+
+
+
     public static void main(String... args) throws Exception {
-        int numFeatures = 614;
+        int numFeatures = 40;
 
         log.info("Load data....");
         //        MersenneTwister gen = new MersenneTwister(123); // other data to test?
@@ -65,6 +98,49 @@ public class RBMCreateDataExample {
 
         log.info("Train model....");
         model.fit(trainingSet.getFeatureMatrix());
+
+        Gradient gradient = model.gradient();
+        log.info("PARAMS" + model.getParam("W"));
+        log.info("GRADIENTS" + gradient);
+
+        // Gradient titles - W, W-gradient, b, b-gradient, vb, vb-gradient
+        Set<String> vars = new TreeSet<>(gradient.gradientForVariable().keySet()); // W, b, vb
+        Set<String> gradients = new LinkedHashSet<>();
+        for(String s : vars) {
+            gradients.add(s + "-gradient");
+        }
+        vars.addAll(gradients);
+        String[] titles = vars.toArray(new String[vars.size()]);
+
+        // Gradient matrices
+        INDArray[] matrices = new INDArray[]{
+                model.getParam(DefaultParamInitializer.WEIGHT_KEY),
+                model.getParam(PretrainParamInitializer.BIAS_KEY),
+                model.getParam(PretrainParamInitializer.VISIBLE_BIAS_KEY),
+                gradient.gradientForVariable().get(DefaultParamInitializer.WEIGHT_KEY),
+                gradient.gradientForVariable().get(DefaultParamInitializer.BIAS_KEY),
+                gradient.gradientForVariable().get(PretrainParamInitializer.VISIBLE_BIAS_KEY)
+        };
+
+
+        String[] path = new String[matrices.length * 2];
+        for(int i = 0; i < path.length - 1; i+=2) {
+            INDArray value = matrices[i / 2].ravel();
+            log.info(value.toString());
+            path[i] = writeMatrix(matrices[i / 2].ravel());
+            path[i + 1] = titles[i / 2];
+        }
+        String paths = StringUtils.join(path, ",");
+
+        log.info("PATHS" + paths);
+        String plotFile = new ClassPathResource("python/plot.py").getFile().getAbsolutePath();
+
+        Process is = Runtime.getRuntime().exec("python " + plotFile + " multi "+ paths);
+
+        log.info("Rendering Matrix histograms... ");
+        log.info("Std out " + IOUtils.readLines(is.getInputStream()).toString());
+//        log.error(IOUtils.readLines(is.getErrorStream()).toString());
+
 
         // Single layer just learns features and can't be supervised. Thus cannot be evaluated.
 
