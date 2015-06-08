@@ -53,25 +53,27 @@ public class DBNIrisExample {
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(4)
-                .nOut(3)
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
-                .iterations(100)
-                .weightInit(WeightInit.DISTRIBUTION)
-                .dist(new UniformDistribution(0, 1))
-                .activationFunction("tanh")
-                .k(1)
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
-                .learningRate(1e-1f)
-                .momentum(0.9)
-                .regularization(true)
-                .l2(2e-4)
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
-                .constrainGradientToUnitNorm(true)
+                .layer(new RBM()) //the nn's layers will be RBMs
+                .nIn(4) // no. of Input nodes = 4
+                .nOut(3) // no. of Output nodes/labels = 3
+                .visibleUnit(RBM.VisibleUnit.GAUSSIAN) //Gaussian transform
+                .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rect. Linear trans.
+                .iterations(100) // make 100 passes of guess and backprop
+                .weightInit(WeightInit.DISTRIBUTION) // initializes weights
+                .dist(new UniformDistribution(0, 1)) 
+                .activationFunction("tanh") // sigmoid activation of nodes
+                .k(1) // no. of times you run contrastive divergence
+                .lossFunction(LossFunctions.LossFunction.RMSE_XENT) 
+                // your loss function = root-mean-squared error cross entropy
+                .learningRate(1e-1f) //the size of the steps your algo takes
+                .momentum(0.9) //a coefficient that modifies the learning rate
+                .regularization(true) // regularization fights overfitting
+                .l2(2e-4) // l2 is one type of regularization
+                .optimizationAlgo(OptimizationAlgorithm.LBFGS) 
+                //optimization algorithms calculate the gradients. LBFGS is one type.
+                .constrainGradientToUnitNorm(true) 
                 .list(2)
-                .hiddenLayerSizes(3)
+                .hiddenLayerSizes(3) // no. of nodes in your hidden layer. this is small.
                 .override(1, new ClassifierOverride())
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
