@@ -70,10 +70,12 @@ public class DBNIrisExample {
                 .regularization(true) // regularization fights overfitting
                 .l2(2e-4) // l2 is one type of regularization
                 .optimizationAlgo(OptimizationAlgorithm.LBFGS) 
-                //optimization algorithms calculate the gradients. LBFGS is one type.
+                //optimization algorithms calculate the gradients. 
+                //LBFGS is one type.
                 .constrainGradientToUnitNorm(true) 
                 .list(2)
-                .hiddenLayerSizes(3) // no. of nodes in your hidden layer. this is small.
+                .hiddenLayerSizes(3) // no. of nodes in your hidden layer. 
+                // this is small.
                 .override(1, new ClassifierOverride())
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
