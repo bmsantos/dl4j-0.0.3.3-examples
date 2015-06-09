@@ -1,8 +1,15 @@
-import sys
-from PIL import Image
+'''
+Optimization Methods Visualalization
+
+Graph tools to help visualize how optimization is performing
+'''
+
 from matplotlib.pyplot import hist, title, subplot, scatter
-import matplotlib.pyplot as plot
+import matplotlib.pyplot as plt
 from numpy import tanh, fabs, mean, ones, loadtxt, fromfile, zeros, product
+import seaborn
+from PIL import Image
+import sys
 
 
 def load_file(file_name):
@@ -12,36 +19,38 @@ def load_file(file_name):
 def render_hbias(path):
     hMean = load_file(path)
     image = Image.fromarray(hMean * 256).show()
+    return
 
-
-def render_hist_matrix(values, show=True, chart_title=''):
+def render_hist_matrix(values, chart_title=''):
     if product(values.shape) < 2:
-        values = zeros((3,3))
+        values = zeros((3, 3))
         chart_title += '-fake'
+
     hist(values)
     magnitude = ' mm %g ' % mean(fabs(values))
     chart_title += ' ' + magnitude
     title(chart_title)
-
+    return
 
 def plot_multiple_matrices(data):
     paths = data.split(',')
-    graph_count = 1
-    print paths
-    for idx, path in enumrate(paths):
+
+    for idx, path in enumerate(paths):
         if idx % 2 == 0:
-            print 'Loading matrix: ' + paths[path+idx] + '\n'
-            matrix = load_file(path)
-            subplot(2, len(paths)/3, graph_count)
-            plot.tight_layout()
-            render_hist_matrix(matrix, chart_title=paths[path+idx])
-    plot.show()
+            print 'Loading matrix: ' + paths[idx+1] + '\n'
+            matrix = load_file(paths[idx])
+            subplot(2, len(paths)/4, idx/2+1) #subplot index starts at 1
+            render_hist_matrix(matrix, chart_title=paths[idx+1])
 
+    plt.tight_layout()
+    plt.show()
+    return
 
-def render_scatter_matrix(values, show=True, chart_title=''):
+def render_scatter_matrix(values, chart_title=''):
     if product(values.shape) < 2:
-        values = zeros((3,3))
+        values = zeros((3, 3))
         chart_title += '-fake'
+
     scatter(values)
     magnitude = ' mm %g ' % mean(fabs(values))
     chart_title += ' ' + magnitude
@@ -50,19 +59,18 @@ def render_scatter_matrix(values, show=True, chart_title=''):
 
 def plot_multiple_scatters(data):
     paths = data.split(',')
-    graph_count = 1
-    print paths
-    for i  in xrange(len(paths) - 1):
-        if i % 2 == 0:
-            path = paths[i]
-            title = paths[i + 1]
+
+    for idx, path in enumerate(paths):
+        if idx % 2 == 0:
+            title = paths[idx + 1]
             print 'Loading matrix ' + path + '\n'
             matrix = load_file(path)
-            subplot(2,len(paths) / 3,graph_count)
-            plot.tight_layout()
-            render_scatter_matrix(matrix, False, chart_title=title)
-            graph_count += 1
-    plot.show()
+            subplot(2, len(paths)/4, idx/2+1)
+            render_scatter_matrix(matrix, chart_title=title)
+
+    plt.tight_layout()
+    plt.show()
+    return
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
@@ -70,7 +78,6 @@ if __name__ == '__main__':
         sys.exit(1)
     plot_type = sys.argv[1]
     data = sys.argv[2]
-
     if plot_type == 'hbias':
         render_hbias(data)
     elif plot_type == 'weights':

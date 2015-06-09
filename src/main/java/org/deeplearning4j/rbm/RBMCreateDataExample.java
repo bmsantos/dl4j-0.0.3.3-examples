@@ -99,18 +99,17 @@ public class RBMCreateDataExample {
         log.info("Train model....");
         model.fit(trainingSet.getFeatureMatrix());
 
+        ///////////////////////////
         Gradient gradient = model.gradient();
         log.info("PARAMS" + model.getParam("W"));
         log.info("GRADIENTS" + gradient);
 
         // Gradient titles - W, W-gradient, b, b-gradient, vb, vb-gradient
         Set<String> vars = new TreeSet<>(gradient.gradientForVariable().keySet()); // W, b, vb
-        Set<String> gradients = new LinkedHashSet<>();
+        List<String> titles = new ArrayList<>(vars);
         for(String s : vars) {
-            gradients.add(s + "-gradient");
+            titles.add(s + "-gradient");
         }
-        vars.addAll(gradients);
-        String[] titles = vars.toArray(new String[vars.size()]);
 
         // Gradient matrices
         INDArray[] matrices = new INDArray[]{
@@ -122,24 +121,21 @@ public class RBMCreateDataExample {
                 gradient.gradientForVariable().get(PretrainParamInitializer.VISIBLE_BIAS_KEY)
         };
 
-
-        String[] path = new String[matrices.length * 2];
+        String[] path = new String[titles.size() + matrices.length];
         for(int i = 0; i < path.length - 1; i+=2) {
-            INDArray value = matrices[i / 2].ravel();
-            log.info(value.toString());
-            path[i] = writeMatrix(matrices[i / 2].ravel());
-            path[i + 1] = titles[i / 2];
+            path[i] = writeMatrix(matrices[i/2].ravel());
+            path[i+1] = titles.get(i/2);
         }
         String paths = StringUtils.join(path, ",");
-
-        log.info("PATHS" + paths);
+//        String plotFile = "~/Documents/skymind/examples/dl4j-0.0.3.3-examples/src/main/resources/python/plot.py";
         String plotFile = new ClassPathResource("python/plot.py").getFile().getAbsolutePath();
+        String cmd = "python " + plotFile + " multi "+ paths;
 
-        Process is = Runtime.getRuntime().exec("python " + plotFile + " multi "+ paths);
+        log.info("Rendering Matrix histograms. Close window when ready ton continue or end program... ");
+        Process is = Runtime.getRuntime().exec(cmd);
 
-        log.info("Rendering Matrix histograms... ");
         log.info("Std out " + IOUtils.readLines(is.getInputStream()).toString());
-//        log.error(IOUtils.readLines(is.getErrorStream()).toString());
+        log.error("Std error " + IOUtils.readLines(is.getErrorStream()).toString());
 
 
         // Single layer just learns features and can't be supervised. Thus cannot be evaluated.
