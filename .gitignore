@@ -4,3 +4,6 @@ target/
 logs/
 *.ser
 *.log
+*.ipynb_checkpoints
+*.pyc
+graph-tmp/
