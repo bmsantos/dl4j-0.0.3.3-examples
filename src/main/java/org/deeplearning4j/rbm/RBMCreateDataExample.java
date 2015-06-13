@@ -17,6 +17,7 @@ import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.plot.FilterRenderer;
 import org.deeplearning4j.plot.NeuralNetPlotter;
+import org.deeplearning4j.plot.iterationlistener.NeuralNetPlotterIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
@@ -62,9 +63,9 @@ public class RBMCreateDataExample {
 
     public static void main(String... args) throws Exception {
         int numFeatures = 40;
+        Nd4j.getRandom().setSeed(123);
 
         log.info("Load dat....");
-        //        MersenneTwister gen = new MersenneTwister(123); // other data to test?
 
         INDArray input = Nd4j.create(2, numFeatures); // have to be at least two or else output layer gradient is a scalar and cause exception
         INDArray labels = Nd4j.create(2, 2);
@@ -82,14 +83,12 @@ public class RBMCreateDataExample {
 
         DataSet trainingSet = new DataSet(input, labels);
 
-        Nd4j.getRandom().setSeed(123);
 
         log.info("Build model....");
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
                 .layer(new RBM())
                 .nIn(trainingSet.numInputs())
                 .nOut(trainingSet.numOutcomes())
-                .rng(new DefaultRandom(123))
                 .weightInit(WeightInit.SIZE)
                 .constrainGradientToUnitNorm(true)
                 .iterations(3)
@@ -105,7 +104,8 @@ public class RBMCreateDataExample {
 
         log.info("Train model....");
         model.fit(trainingSet.getFeatureMatrix());
-               // Visualize End Results
+
+        log.info("Visualize training results....");
         NeuralNetPlotter plotter = new NeuralNetPlotter();
         plotter.plotNetworkGradient(model, model.gradient(), 10);
     }
