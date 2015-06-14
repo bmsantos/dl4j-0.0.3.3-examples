@@ -44,36 +44,37 @@ public class RBMIrisExample {
         Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
 
         log.info("Load data....");
-        DataSetIterator iter = new IrisDataSetIterator(150, 150);
-        DataSet iris = iter.next();
+        DataSetIterator iter = new IrisDataSetIterator(150, 150); 
+        DataSet iris = iter.next(); //DataSetIterator loads data from orig. file into 
+                                    //DataSet structure that neural net can use. 
         iris.normalizeZeroMeanZeroUnitVariance();
 
         log.info("Build model....");
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(4)
-                .nOut(3)
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
-                .iterations(100)
-                .weightInit(WeightInit.DISTRIBUTION)
-                .dist(new UniformDistribution(0, 1))
-                .activationFunction("tanh")
-                .k(1)
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
-                .learningRate(1e-1f)
-                .momentum(0.9)
-                .regularization(true)
-                .l2(2e-4)
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
-                .constrainGradientToUnitNorm(true)
+                .layer(new RBM()) //we define the layer as an RBM
+                .nIn(4) // no. inputs = no. of Iris features
+                .nOut(3) // no. outputs = no. of Iris species/labels
+                .visibleUnit(RBM.VisibleUnit.GAUSSIAN) //add Gaussian noise to generalize
+                .hiddenUnit(RBM.HiddenUnit.RECTIFIED) //Relu transform
+                .iterations(100) // run 100 times to train
+                .weightInit(WeightInit.DISTRIBUTION) //rand. initialization of weights
+                .dist(new UniformDistribution(0, 1)) // mean of 0, st. dev. of 1
+                .activationFunction("tanh") //squash the output w/nonlinear sigmoid transform tanh
+                .k(1) // k = no. samples to collect for 1 iteration. k=1 is normal
+                .lossFunction(LossFunctions.LossFunction.RMSE_XENT) //root-mean-squared-error cross entropy to measure error
+                .learningRate(1e-1f) //step size adjusting weights at each iteration
+                .momentum(0.9) //2nd-order coefficient for the learning rate
+                .regularization(true) // regularization fights overfitting.
+                .l2(2e-4) // L2 regularization punishes high values in coefficients
+                .optimizationAlgo(OptimizationAlgorithm.LBFGS) // calculates gradients along which params are optimized
+                .constrainGradientToUnitNorm(true) 
                 .build();
         Layer model = LayerFactories.getFactory(conf.getLayer()).create(conf);
         model.setIterationListeners(Arrays.asList((IterationListener) new ScoreIterationListener(1)));
 
         log.info("Train model....");
-        model.fit(iris.getFeatureMatrix());
+        model.fit(iris.getFeatureMatrix()); // calling fit initializes the model's learning process.
 
-        // Single layer just learns features and can't be supervised. Thus cannot be evaluated.
+        // A single layer just learns features and can't be supervised. Thus it cannot be evaluated.
     }
 }
