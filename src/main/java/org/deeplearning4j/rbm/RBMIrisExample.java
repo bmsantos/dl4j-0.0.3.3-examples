@@ -45,7 +45,7 @@ public class RBMIrisExample {
 
         log.info("Load data....");
         DataSetIterator iter = new IrisDataSetIterator(150, 150); 
-        DataSet iris = iter.next(); //DataSetIterator loads data from orig. file into 
+        DataSet iris = iter.next(); //DataSetIterator loads data from file into 
                                     //DataSet structure that neural net can use. 
         iris.normalizeZeroMeanZeroUnitVariance();
 
