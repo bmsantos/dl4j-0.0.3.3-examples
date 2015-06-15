@@ -36,31 +36,6 @@ public class RBMCreateDataExample {
 
     private static Logger log = LoggerFactory.getLogger(RBMCreateDataExample.class);
 
-    protected static String writeMatrix(INDArray matrix) throws IOException {
-        String filePath = System.getProperty("java.io.tmpdir") + File.separator + UUID.randomUUID().toString();
-        File write = new File(filePath);
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(write,true));
-        write.deleteOnExit();
-        for(int i = 0; i < matrix.rows(); i++) {
-            INDArray row = matrix.getRow(i);
-            StringBuilder sb = new StringBuilder();
-            for(int j = 0; j < row.length(); j++) {
-                sb.append(String.format("%.10f", row.getDouble(j)));
-                if(j < row.length() - 1)
-                    sb.append(",");
-            }
-            sb.append("\n");
-            String line = sb.toString();
-            bos.write(line.getBytes());
-            bos.flush();
-        }
-
-        bos.close();
-        return filePath;
-    }
-
-
-
     public static void main(String... args) throws Exception {
         int numFeatures = 40;
         Nd4j.getRandom().setSeed(123);
