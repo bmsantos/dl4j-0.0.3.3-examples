@@ -8,10 +8,12 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
+import org.deeplearning4j.nn.conf.layers.Layer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.conf.rng.DefaultRandom;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
@@ -38,6 +40,7 @@ public class DBNIrisExample {
 
     public static void main(String[] args) throws IOException {
         // Customizing params
+        Nd4j.getRandom().setSeed(123);
         Nd4j.MAX_SLICES_TO_PRINT = -1;
         Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
 
@@ -47,43 +50,48 @@ public class DBNIrisExample {
         next.normalizeZeroMeanZeroUnitVariance();
 
         log.info("Split data....");
-        SplitTestAndTrain testAndTrain = next.splitTestAndTrain(110);
+        SplitTestAndTrain testAndTrain = next.splitTestAndTrain(110, new org.nd4j.linalg.api.rng.DefaultRandom(10));
         DataSet train = testAndTrain.getTrain();
         DataSet test = testAndTrain.getTest();
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM()) //the nn's layers will be RBMs
-                .nIn(4) // no. of Input nodes = 4
-                .nOut(3) // no. of Output nodes/labels = 3
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN) //Gaussian transform
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rect. Linear trans.
-                .iterations(100) // make 100 passes of guess and backprop
-                .weightInit(WeightInit.DISTRIBUTION) // initializes weights
-                .dist(new UniformDistribution(0, 1)) 
-                .activationFunction("tanh") // sigmoid activation of nodes
-                .k(1) // no. of times you run contrastive divergence
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT) 
-                // your loss function = root-mean-squared error cross entropy
-                .learningRate(1e-1f) //the size of the steps your algo takes
-                .momentum(0.9) //a coefficient that modifies the learning rate
-                .regularization(true) // regularization fights overfitting
-                .l2(2e-4) // l2 is one type of regularization
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS) 
-                //optimization algorithms calculate the gradients. 
-                //LBFGS is one type.
-                .constrainGradientToUnitNorm(true) 
-                .list(2)
-                .hiddenLayerSizes(3) // no. of nodes in your hidden layer. 
-                // this is small.
-                .override(1, new ClassifierOverride())
-                .build();
+            .layer(new RBM()) //the nn's layers will be RBMs
+            .nIn(4) // no. of Input nodes = 4
+            .nOut(3) // no. of Output nodes/labels = 3
+            .visibleUnit(RBM.VisibleUnit.GAUSSIAN) //Gaussian transform
+            .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rect. Linear trans.
+            .iterations(100) // make 100 passes of guess and backprop
+            .weightInit(WeightInit.DISTRIBUTION) // initializes weights
+            .dist(new UniformDistribution(0, 1))
+            .activationFunction("sigmoid") // sigmoid activation of nodes
+            .k(1) // no. of times you run contrastive divergence
+            .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+            // your loss function = root-mean-squared error cross entropy
+            .learningRate(1e-1f) //the size of the steps your algo takes
+            .momentum(0.9) //a coefficient that modifies the learning rate
+            .regularization(true) // regularization fights overfitting
+            .l2(2e-4) // l2 is one type of regularization
+            .optimizationAlgo(OptimizationAlgorithm.LBFGS)
+            //optimization algorithms calculate the gradients.
+            //LBFGS is one type.
+            .constrainGradientToUnitNorm(true)
+            .list(2)
+            .hiddenLayerSizes(3) // no. of nodes in your hidden layer.
+            // this is small.
+            .override(1, new ClassifierOverride())
+            .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(10)));
 
         log.info("Train model....");
         model.fit(train);
+
+        for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
+            INDArray w = layer.getParam(DefaultParamInitializer.WEIGHT_KEY);
+            log.info("Weights: " + w);
+        }
 
         log.info("Evaluate model....");
         Evaluation eval = new Evaluation();
