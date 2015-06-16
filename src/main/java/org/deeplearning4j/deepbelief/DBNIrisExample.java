@@ -8,10 +8,12 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
+import org.deeplearning4j.nn.conf.layers.Layer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.conf.rng.DefaultRandom;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
@@ -38,6 +40,7 @@ public class DBNIrisExample {
 
     public static void main(String[] args) throws IOException {
         // Customizing params
+        Nd4j.getRandom().setSeed(123);
         Nd4j.MAX_SLICES_TO_PRINT = -1;
         Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
 
@@ -47,7 +50,7 @@ public class DBNIrisExample {
         next.normalizeZeroMeanZeroUnitVariance();
 
         log.info("Split data....");
-        SplitTestAndTrain testAndTrain = next.splitTestAndTrain(110);
+        SplitTestAndTrain testAndTrain = next.splitTestAndTrain(110, new org.nd4j.linalg.api.rng.DefaultRandom(10));
         DataSet train = testAndTrain.getTrain();
         DataSet test = testAndTrain.getTest();
 
@@ -58,28 +61,32 @@ public class DBNIrisExample {
                 .nOut(3)
                 .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
-                .iterations(100)
+                .iterations(10)
                 .weightInit(WeightInit.DISTRIBUTION)
                 .dist(new UniformDistribution(0, 1))
-                .activationFunction("tanh")
+                .activationFunction("sigmoid")
                 .k(1)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
-                .learningRate(1e-1f)
+                .learningRate(0.13)
                 .momentum(0.9)
                 .regularization(true)
                 .l2(2e-4)
                 .optimizationAlgo(OptimizationAlgorithm.LBFGS)
-                .constrainGradientToUnitNorm(true)
                 .list(2)
                 .hiddenLayerSizes(3)
                 .override(1, new ClassifierOverride())
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(10)));
 
         log.info("Train model....");
         model.fit(train);
+
+        for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
+            INDArray w = layer.getParam(DefaultParamInitializer.WEIGHT_KEY);
+            log.info("Weights: " + w);
+        }
 
         log.info("Evaluate model....");
         Evaluation eval = new Evaluation();
