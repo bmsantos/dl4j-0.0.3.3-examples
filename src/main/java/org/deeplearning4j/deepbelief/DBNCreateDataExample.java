@@ -60,6 +60,7 @@ public class DBNCreateDataExample {
                 .nOut(trainingSet.numOutcomes())
                 .weightInit(WeightInit.DISTRIBUTION)
                 .dist(new NormalDistribution(0,1))
+                .seed(2)
                 .constrainGradientToUnitNorm(true)
                 .iterations(iterations)
                 .activationFunction("tanh")
