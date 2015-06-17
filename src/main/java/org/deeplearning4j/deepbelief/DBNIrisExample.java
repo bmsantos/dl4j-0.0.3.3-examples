@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Random;
 import java.util.Collections;
 
 
@@ -50,7 +50,7 @@ public class DBNIrisExample {
         next.normalizeZeroMeanZeroUnitVariance();
 
         log.info("Split data....");
-        SplitTestAndTrain testAndTrain = next.splitTestAndTrain(110, new org.nd4j.linalg.api.rng.DefaultRandom(10));
+        SplitTestAndTrain testAndTrain = next.splitTestAndTrain(110, new Random(123));
         DataSet train = testAndTrain.getTrain();
         DataSet test = testAndTrain.getTest();
 
@@ -60,6 +60,7 @@ public class DBNIrisExample {
             .nIn(4) // no. of Input nodes = 4
             .nOut(3) // no. of Output nodes/labels = 3
             .visibleUnit(RBM.VisibleUnit.GAUSSIAN) //Gaussian transform
+            .seed(123)
             .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rect. Linear trans.
             .iterations(100) // make 100 passes of guess and backprop
             .weightInit(WeightInit.DISTRIBUTION) // initializes weights

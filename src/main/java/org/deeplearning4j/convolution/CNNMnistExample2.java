@@ -81,7 +81,7 @@ public class CNNMnistExample2 {
                 .batchSize(batchSize)
                 .iterations(iterations)
                 .weightInit(WeightInit.ZERO)
-                .rng(new DefaultRandom(3L))
+                .seed(3)
                 .activationFunction("sigmoid")
                 .filterSize(8, 1, numRows, numColumns)
                 .lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
