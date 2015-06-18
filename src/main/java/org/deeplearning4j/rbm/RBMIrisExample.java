@@ -13,9 +13,11 @@ import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.layers.factory.LayerFactories;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.plot.NeuralNetPlotter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.SplitTestAndTrain;
@@ -43,38 +45,57 @@ public class RBMIrisExample {
         Nd4j.MAX_SLICES_TO_PRINT = -1;
         Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
 
+        final int numRows = 4;
+        final int numColumns = 1;
+        int outputNum = 3;
+        int numSamples = 150;
+        int batchSize = 150;
+        int iterations = 100;
+        int seed = 123;
+        int listenerFreq = iterations/5;
+
         log.info("Load data....");
-        DataSetIterator iter = new IrisDataSetIterator(150, 150); 
-        DataSet iris = iter.next(); //DataSetIterator loads data from file into 
-                                    //DataSet structure that neural net can use. 
+        DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
+        DataSet iris = iter.next(); // Loads data into generator and format consumable for NN
+
         iris.normalizeZeroMeanZeroUnitVariance();
 
         log.info("Build model....");
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM()) //we define the layer as an RBM
-                .nIn(4) // no. inputs = no. of Iris features
-                .nOut(3) // no. outputs = no. of Iris species/labels
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN) //add Gaussian noise to generalize
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED) //Relu transform
-                .iterations(100) // run 100 times to train
-                .weightInit(WeightInit.DISTRIBUTION) //rand. initialization of weights
-                .dist(new UniformDistribution(0, 1)) // mean of 0, st. dev. of 1
-                .activationFunction("tanh") //squash the output w/nonlinear sigmoid transform tanh
-                .k(1) // k = no. samples to collect for 1 iteration. k=1 is normal
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT) //root-mean-squared-error cross entropy to measure error
-                .learningRate(1e-1f) //step size adjusting weights at each iteration
-                .momentum(0.9) //2nd-order coefficient for the learning rate
-                .regularization(true) // regularization fights overfitting.
-                .l2(2e-4) // L2 regularization punishes high values in coefficients
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS) // calculates gradients along which params are optimized
-                .constrainGradientToUnitNorm(true) 
+                .layer(new RBM()) // NN layer type
+                .nIn(numRows * numColumns) // # input nodes
+                .nOut(outputNum) // # output nodes
+                .seed(seed) // Seed to lock in weight initialization for tuning
+                .visibleUnit(RBM.VisibleUnit.GAUSSIAN) // Gaussian transformation visible layer
+                .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rectified Linear transformation visible layer
+                .weightInit(WeightInit.DISTRIBUTION) // Weight initialization method
+                .dist(new UniformDistribution(0, 1))  // Weight distribution curve mean and stdev
+                .activationFunction("tanh") // Activation function type
+                .k(1) // # contrastive divergence iterations
+                .lossFunction(LossFunctions.LossFunction.RMSE_XENT) // Loss function type
+                .learningRate(1e-1f) // Backprop step size
+                .momentum(0.9) // Speed of modifying learning rate
+                .regularization(true) // Prevent overfitting
+                .l2(2e-4) // Regularization type
+                .optimizationAlgo(OptimizationAlgorithm.LBFGS) // Backprop method (calculate the gradients)
+                .constrainGradientToUnitNorm(true)
                 .build();
         Layer model = LayerFactories.getFactory(conf.getLayer()).create(conf);
-        model.setIterationListeners(Arrays.asList((IterationListener) new ScoreIterationListener(1)));
+        model.setIterationListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
+
+        log.info("Evaluate weights....");
+        INDArray w = model.getParam(DefaultParamInitializer.WEIGHT_KEY);
+        log.info("Weights: " + w);
 
         log.info("Train model....");
-        model.fit(iris.getFeatureMatrix()); // calling fit initializes the model's learning process.
+        model.fit(iris.getFeatureMatrix());
 
-        // A single layer just learns features and can't be supervised. Thus it cannot be evaluated.
+        log.info("Visualize training results....");
+        NeuralNetPlotter plotter = new NeuralNetPlotter();
+        plotter.plotNetworkGradient(model, model.gradient(), 10);
     }
+
+
+    // A single layer just learns features and is not supervised learning.
+
 }

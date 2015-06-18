@@ -12,6 +12,7 @@ import org.deeplearning4j.nn.conf.override.ConfOverride;
 import org.deeplearning4j.nn.layers.convolution.preprocessor.ConvolutionInputPreProcessor;
 import org.deeplearning4j.nn.layers.convolution.preprocessor.ConvolutionPostProcessor;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
@@ -22,10 +23,7 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by willow on 5/11/15.
@@ -38,15 +36,18 @@ public class CNNMnistExample {
 
         final int numRows = 28;
         final int numColumns = 28;
+        int outputNum = 10;
         int numSamples = 100;
         int batchSize = 10;
         int iterations = 5;
+        int splitTrainNum = (int) (batchSize*.8);
+        int seed = 123;
+        int listenerFreq = iterations/5;
         DataSet mnist;
         SplitTestAndTrain trainTest;
         DataSet trainInput;
         List<INDArray> testInput = new ArrayList<>();
         List<INDArray> testLabels = new ArrayList<>();
-
 
         log.info("Load data....");
         DataSetIterator mnistIter = new MnistDataSetIterator(batchSize,numSamples);
@@ -54,7 +55,7 @@ public class CNNMnistExample {
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .nIn(numRows * numColumns)
-                .nOut(10)
+                .nOut(outputNum)
                 .batchSize(batchSize)
                 .iterations(iterations)
                 .weightInit(WeightInit.UNIFORM)
@@ -63,7 +64,7 @@ public class CNNMnistExample {
                 .optimizationAlgo(OptimizationAlgorithm.LBFGS)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
-                .hiddenLayerSizes(new int[]{50})
+                .hiddenLayerSizes(100)
                 .inputPreProcessor(0, new ConvolutionInputPreProcessor(numRows, numColumns))
                 .preProcessor(1, new ConvolutionPostProcessor())
                 .override(0, new ConfOverride() {
@@ -82,16 +83,22 @@ public class CNNMnistExample {
         model.init();
 
         log.info("Train model....");
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
 //        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(1)));
         while(mnistIter.hasNext()) {
             mnist = mnistIter.next();
             mnist.normalizeZeroMeanZeroUnitVariance();
-            trainTest = mnist.splitTestAndTrain((int) (mnist.numExamples()*.8)); // train set that is the result
+            trainTest = mnist.splitTestAndTrain(splitTrainNum, new Random(seed)); // train set that is the result
             trainInput = trainTest.getTrain(); // get feature matrix and labels for training
             testInput.add(trainTest.getTest().getFeatureMatrix());
             testLabels.add(trainTest.getTest().getLabels());
             model.fit(trainInput);
+        }
+
+        log.info("Evaluate weights....");
+        for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
+            INDArray w = layer.getParam(DefaultParamInitializer.WEIGHT_KEY);
+            log.info("Weights: " + w);
         }
 
         log.info("Evaluate model....");

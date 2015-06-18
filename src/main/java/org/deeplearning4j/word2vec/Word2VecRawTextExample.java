@@ -29,6 +29,8 @@ public class Word2VecRawTextExample {
     public static void main(String[] args) throws Exception {
         // Customizing params
         Nd4j.ENFORCE_NUMERICAL_STABILITY = true;
+        int batchSize = 1000;
+        int iterations = 30;
         int layerSize = 300;
 
         log.info("Load data....");
@@ -58,12 +60,12 @@ public class Word2VecRawTextExample {
 
         log.info("Build model....");
         Word2Vec vec = new Word2Vec.Builder()
-                .batchSize(1000)
+                .batchSize(batchSize)
                 .sampling(1e-5)
                 .minWordFrequency(5)
                 .useAdaGrad(false)
                 .layerSize(layerSize)
-                .iterations(3)
+                .iterations(iterations)
                 .learningRate(0.025)
                 .minLearningRate(1e-2)
                 .negativeSample(10)

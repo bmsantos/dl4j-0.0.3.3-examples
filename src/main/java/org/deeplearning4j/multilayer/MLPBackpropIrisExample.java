@@ -39,20 +39,31 @@ public class MLPBackpropIrisExample {
 
     public static void main(String[] args) throws IOException {
         // Customizing params
-        Nd4j.MAX_SLICES_TO_PRINT = -1;
-        Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
+        Nd4j.MAX_SLICES_TO_PRINT = 10;
+        Nd4j.MAX_ELEMENTS_PER_SLICE = 10;
+
+        final int numRows = 4;
+        final int numColumns = 1;
+        int outputNum = 3;
+        int numSamples = 150;
+        int batchSize = 10;
+        int iterations = 1000;
+        int splitTrainNum = (int) (batchSize * .8);
+        long seed = 123;
+        int listenerFreq = iterations/5;
 
         log.info("Load data....");
-        DataSetIterator iter = new IrisDataSetIterator(10, 150);
+        DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .layer(new RBM())
-                .nIn(4)
-                .nOut(3)
+                .nIn(numRows * numColumns)
+                .nOut(outputNum)
+                .seed(seed)
                 .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
-                .iterations(1000)
+                .iterations(iterations)
                 .weightInit(WeightInit.DISTRIBUTION)
                 .dist(new UniformDistribution(0, 1))
                 .activationFunction("tanh")
@@ -71,7 +82,8 @@ public class MLPBackpropIrisExample {
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+
         log.info("Train model....");
         while(iter.hasNext()) {
             DataSet iris = iter.next();
@@ -82,7 +94,7 @@ public class MLPBackpropIrisExample {
 
         log.info("Evaluate model....");
         Evaluation eval = new Evaluation();
-        DataSetIterator iterTest = new IrisDataSetIterator(150, 150);
+        DataSetIterator iterTest = new IrisDataSetIterator(numSamples, numSamples);
         DataSet test = iterTest.next();
         test.normalizeZeroMeanZeroUnitVariance();
         INDArray output = model.output(test.getFeatureMatrix());

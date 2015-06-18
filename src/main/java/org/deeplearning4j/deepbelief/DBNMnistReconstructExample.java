@@ -34,17 +34,27 @@ public class DBNMnistReconstructExample {
 
     public static void main(String[] args) throws Exception {
 
+        final int numRows = 28;
+        final int numColumns = 28;
+        int outputNum = 10;
+        int numSamples = 1000;
+        int batchSize = 100;
+        int iterations = 10;
+        int seed = 123;
+        int listenerFreq = iterations/5;
+
         log.info("Load data....");
-        DataSetIterator iter = new MnistDataSetIterator(100,1000);
+        DataSetIterator iter = new MnistDataSetIterator(batchSize, numSamples);
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .layer(new RBM())
-                .nIn(784)
-                .nOut(10)
+                .nIn(numRows * numColumns)
+                .nOut(outputNum)
+                .seed(seed)
                 .weightInit(WeightInit.VI)
                 .constrainGradientToUnitNorm(true)
-                .iterations(5)
+                .iterations(iterations)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .learningRate(1e-1f)
                 .list(4)
@@ -53,10 +63,9 @@ public class DBNMnistReconstructExample {
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Train model....");
-
         while(iter.hasNext()) {
             DataSet mnist = iter.next();
             mnist.normalizeZeroMeanZeroUnitVariance();

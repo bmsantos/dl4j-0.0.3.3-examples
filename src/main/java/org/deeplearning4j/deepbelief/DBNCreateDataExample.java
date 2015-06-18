@@ -10,6 +10,7 @@ import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.layers.factory.LayerFactories;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
@@ -35,6 +36,9 @@ public class DBNCreateDataExample {
     public static void main(String... args) throws Exception {
         int numFeatures = 614;
         int iterations = 5;
+        int seed = 123;
+        int listenerFreq = iterations/5;
+
 
         log.info("Load data....");
         // have to be at least two or else output layer gradient is a scalar and cause exception
@@ -60,7 +64,7 @@ public class DBNCreateDataExample {
                 .nOut(trainingSet.numOutcomes())
                 .weightInit(WeightInit.DISTRIBUTION)
                 .dist(new NormalDistribution(0,1))
-                .seed(2)
+                .seed(seed)
                 .constrainGradientToUnitNorm(true)
                 .iterations(iterations)
                 .activationFunction("tanh")
@@ -75,10 +79,16 @@ public class DBNCreateDataExample {
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Train model....");
         model.fit(trainingSet);
+
+        log.info("Evaluate weights....");
+        for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
+            INDArray w = layer.getParam(DefaultParamInitializer.WEIGHT_KEY);
+            log.info("Weights: " + w);
+        }
 
         log.info("Evaluate model....");
         INDArray predictedMatrix = model.output(trainingSet.getFeatureMatrix());

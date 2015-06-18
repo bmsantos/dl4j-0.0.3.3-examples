@@ -34,14 +34,21 @@ public class DBNLWFExample {
 
     public static void main(String[] args) throws Exception {
 
+        int numSamples = 1000;
+        int batchSize = 100;
+        int iterations = 5;
+        int seed = 123;
+        int listenerFreq = iterations/5;
+
         log.info("Load data....");
-        DataSetIterator dataIter = new LFWDataSetIterator(100,1000);
+        DataSetIterator dataIter = new LFWDataSetIterator(batchSize,numSamples);
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .layer(new RBM())
                 .nIn(dataIter.inputColumns())
                 .nOut(dataIter.totalOutcomes())
+                .seed(seed)
                 .weightInit(WeightInit.DISTRIBUTION)
                 .dist(new NormalDistribution(1e-3, 1e-1))
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
@@ -53,7 +60,7 @@ public class DBNLWFExample {
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Train model....");
         while(dataIter.hasNext()) {
