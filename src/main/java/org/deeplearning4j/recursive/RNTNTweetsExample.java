@@ -39,6 +39,7 @@ public class RNTNTweetsExample {
 
 
         log.info("Load data....");
+
         List<String> lines = FileUtils.readLines(new ClassPathResource("sentiment-tweets-small.csv").getFile());
         List<String> sentences = new ArrayList<>();
         List<String> labels = new ArrayList<>();

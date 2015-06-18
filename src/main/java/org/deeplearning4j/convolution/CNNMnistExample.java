@@ -56,6 +56,7 @@ public class CNNMnistExample {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .nIn(numRows * numColumns)
                 .nOut(outputNum)
+                .seed(seed)
                 .batchSize(batchSize)
                 .iterations(iterations)
                 .weightInit(WeightInit.UNIFORM)
@@ -64,7 +65,7 @@ public class CNNMnistExample {
                 .optimizationAlgo(OptimizationAlgorithm.LBFGS)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
-                .hiddenLayerSizes(100)
+                .hiddenLayerSizes(50)
                 .inputPreProcessor(0, new ConvolutionInputPreProcessor(numRows, numColumns))
                 .preProcessor(1, new ConvolutionPostProcessor())
                 .override(0, new ConfOverride() {

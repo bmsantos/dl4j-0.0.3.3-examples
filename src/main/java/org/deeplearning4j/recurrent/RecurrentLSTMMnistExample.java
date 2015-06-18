@@ -47,7 +47,7 @@ public class RecurrentLSTMMnistExample {
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
                 .layer(new LSTM())
                 .nIn(numRows * numColumns)
-                .nOut(outputNum)
+                .nOut(numRows * numColumns)
                 .seed(seed)
                 .activationFunction("sigmoid")
                 .optimizationAlgo(OptimizationAlgorithm.LBFGS)
@@ -68,11 +68,7 @@ public class RecurrentLSTMMnistExample {
             model.fit(mnist.getFeatureMatrix());
         }
 
-        log.info("Visualize training results....");
-        NeuralNetPlotter plotter = new NeuralNetPlotter();
-        plotter.plotNetworkGradient(model, model.gradient(), 10);
-
-
+        // TODO add listener for graphs
         // Generative model - unsupervised and its time series based which requires different evaluation technique
 
     }

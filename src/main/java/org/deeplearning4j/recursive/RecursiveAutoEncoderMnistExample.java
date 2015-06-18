@@ -31,7 +31,7 @@ public class RecursiveAutoEncoderMnistExample {
 
         final int numRows = 28;
         final int numColumns = 28;
-        int outputNum = 10;
+        int outputNum = 600;
         int numSamples = 100;
         int batchSize = 100;
         int iterations = 10;
@@ -71,11 +71,7 @@ public class RecursiveAutoEncoderMnistExample {
             INDArray input = data.getFeatureMatrix();
             model.fit(input);
         }
-
-        log.info("Visualize training results....");
-        NeuralNetPlotter plotter = new NeuralNetPlotter();
-        plotter.plotNetworkGradient(model, model.gradient(), 10);
-
+        // TODO add listener for graphs
         // Generative Model - unsupervised and requires different evaluation technique
 
     }

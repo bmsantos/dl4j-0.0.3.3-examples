@@ -53,6 +53,7 @@ public class RBMCreateDataExample {
                 .layer(new RBM())
                 .nIn(trainingSet.numInputs())
                 .nOut(trainingSet.numOutcomes())
+                .seed(seed)
                 .weightInit(WeightInit.SIZE)
                 .constrainGradientToUnitNorm(true)
                 .iterations(iterations)

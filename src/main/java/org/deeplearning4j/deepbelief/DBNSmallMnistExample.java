@@ -40,7 +40,7 @@ public class DBNSmallMnistExample {
         int outputNum = 10;
         int numSamples = 100;
         int batchSize = 100;
-        int iterations = 10;
+        int iterations = 5;
         int seed = 123;
         int listenerFreq = iterations/5;
 
@@ -54,7 +54,7 @@ public class DBNSmallMnistExample {
                 .nOut(outputNum)
                 .seed(seed)
                 .weightInit(WeightInit.DISTRIBUTION)
-                .dist(new UniformDistribution(1e-3, 1e-1))
+                .dist(new UniformDistribution(0, 1))
                 .constrainGradientToUnitNorm(true)
                 .iterations(iterations)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)

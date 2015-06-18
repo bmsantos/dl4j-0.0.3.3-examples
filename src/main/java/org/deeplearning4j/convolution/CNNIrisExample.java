@@ -64,6 +64,7 @@ public class CNNIrisExample {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .nIn(numRows * numColumns)
                 .nOut(outputNum)
+                .seed(seed)
                 .iterations(iterations)
                 .weightInit(WeightInit.VI)
                 .activationFunction("tanh")

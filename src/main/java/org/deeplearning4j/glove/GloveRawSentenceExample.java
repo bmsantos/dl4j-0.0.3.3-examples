@@ -92,6 +92,8 @@ public class GloveRawSentenceExample {
         vec.fit();
 
         log.info("Evaluate model....");
+        double sim = vec.similarity("people", "money");
+        log.info("Similarity between people and money: " + sim);
         Collection<String> similar = vec.wordsNearest("day",20);
         log.info("Similar words to 'day' : " + similar);
 

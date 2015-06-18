@@ -42,7 +42,7 @@ public class DBNFullMnistExample {
         int batchSize = 100;
         int iterations = 10;
         int seed = 123;
-        int listenerFreq = iterations/5;
+        int listenerFreq = batchSize/5;
 
         log.info("Load data....");
         DataSetIterator iter = new MnistDataSetIterator(batchSize,numSamples);
