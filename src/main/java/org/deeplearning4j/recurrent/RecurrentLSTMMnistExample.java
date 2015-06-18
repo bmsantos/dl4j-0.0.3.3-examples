@@ -36,7 +36,7 @@ public class RecurrentLSTMMnistExample {
         int outputNum = 10;
         int numSamples = 100;
         int batchSize = 100;
-        int iterations = 10;
+        int iterations = 100;
         int seed = 123;
         int listenerFreq = iterations/5;
 
@@ -48,7 +48,6 @@ public class RecurrentLSTMMnistExample {
                 .layer(new LSTM())
                 .nIn(numRows * numColumns)
                 .nOut(numRows * numColumns)
-                .seed(seed)
                 .activationFunction("sigmoid")
                 .optimizationAlgo(OptimizationAlgorithm.LBFGS)
                 .constrainGradientToUnitNorm(true)
@@ -56,10 +55,6 @@ public class RecurrentLSTMMnistExample {
                 .build();
         Layer model = LayerFactories.getFactory(conf.getLayer()).create(conf);
         model.setIterationListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
-
-        log.info("Evaluate weights....");
-        INDArray w = model.getParam(DefaultParamInitializer.WEIGHT_KEY);
-        log.info("Weights: " + w);
 
         log.info("Training model...");
         for(int i=0 ; i < (numSamples/batchSize); i++) {
