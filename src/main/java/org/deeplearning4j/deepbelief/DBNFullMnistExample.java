@@ -36,15 +36,14 @@ public class DBNFullMnistExample {
         Nd4j.dtype = DataBuffer.Type.FLOAT;
 
         log.info("Load data....");
-        DataSetIterator iter = new MnistDataSetIterator(100,60000);
+        DataSetIterator iter = new MnistDataSetIterator(1000,60000);
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .layer(new RBM())
                 .nIn(784)
                 .nOut(10)
-                .weightInit(WeightInit.DISTRIBUTION)
-                .dist(new NormalDistribution(0, 1))
+                .weightInit(WeightInit.NORMALIZED)
                 .constrainGradientToUnitNorm(true)
                 .iterations(5)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
@@ -53,24 +52,27 @@ public class DBNFullMnistExample {
                 .momentumAfter(Collections.singletonMap(3, 0.9))
                 .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT)
                 .list(4)
-                .hiddenLayerSizes(new int[]{500, 250, 200})
+                .hiddenLayerSizes(500, 250, 200)
                 .override(3, new ClassifierOverride())
                 .build();
+
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(1)));
 
         log.info("Train model....");
         model.fit(iter); // achieves end to end pre-training
 
         // model.fit(iter) // alternate approach that does end-to-end training before fine tuning
 
+
+        iter.reset();
+
         log.info("Evaluate model....");
         Evaluation eval = new Evaluation();
 
-        DataSetIterator testIter = new MnistDataSetIterator(100,10000);
-        while(testIter.hasNext()) {
-            DataSet testMnist = testIter.next();
+        while(iter.hasNext()) {
+            DataSet testMnist = iter.next();
             testMnist.normalizeZeroMeanZeroUnitVariance();
             INDArray predict2 = model.output(testMnist.getFeatureMatrix());
             eval.eval(testMnist.getLabels(), predict2);

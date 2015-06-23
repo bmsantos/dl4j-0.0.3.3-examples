@@ -26,7 +26,6 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.jblas.NDArray;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.util.ArrayUtil;
 import org.slf4j.Logger;
@@ -81,7 +80,7 @@ public class CNNMnistExample2 {
                 .batchSize(batchSize)
                 .iterations(iterations)
                 .weightInit(WeightInit.ZERO)
-                .rng(new DefaultRandom(3L))
+                .seed(3)
                 .activationFunction("sigmoid")
                 .filterSize(8, 1, numRows, numColumns)
                 .lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)

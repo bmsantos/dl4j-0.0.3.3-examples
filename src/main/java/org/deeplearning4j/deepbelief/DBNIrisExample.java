@@ -41,6 +41,8 @@ public class DBNIrisExample {
         Nd4j.MAX_SLICES_TO_PRINT = -1;
         Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
 
+        Nd4j.getRandom().setSeed(123);
+
         log.info("Load data....");
         DataSetIterator iter = new IrisDataSetIterator(150, 150);
         DataSet next = iter.next();
@@ -59,20 +61,19 @@ public class DBNIrisExample {
                 .visibleUnit(RBM.VisibleUnit.GAUSSIAN) //Gaussian transform
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rect. Linear trans.
                 .iterations(100) // make 100 passes of guess and backprop
-                .weightInit(WeightInit.DISTRIBUTION) // initializes weights
-                .dist(new UniformDistribution(0, 1)) 
-                .activationFunction("tanh") // sigmoid activation of nodes
+                .weightInit(WeightInit.VI) // initializes weights
+                .activationFunction("relu") // sigmoid activation of nodes
                 .k(1) // no. of times you run contrastive divergence
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT) 
+                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 // your loss function = root-mean-squared error cross entropy
-                .learningRate(1e-1f) //the size of the steps your algo takes
+                .learningRate(1e-1) //the size of the steps your algo takes
                 .momentum(0.9) //a coefficient that modifies the learning rate
                 .regularization(true) // regularization fights overfitting
                 .l2(2e-4) // l2 is one type of regularization
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS) 
+                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
                 //optimization algorithms calculate the gradients. 
                 //LBFGS is one type.
-                .constrainGradientToUnitNorm(true) 
+                .constrainGradientToUnitNorm(true)
                 .list(2)
                 .hiddenLayerSizes(3) // no. of nodes in your hidden layer. 
                 // this is small.

@@ -14,6 +14,8 @@
 
     </properties>
 
+
+
     <distributionManagement>
         <snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
@@ -32,6 +34,12 @@
             <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-ui</artifactId>
             <version>${dl4j.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>nd4j-jblas</artifactId>
+                    <groupId>org.nd4j</groupId>
+                </exclusion>
+            </exclusions>
 
         </dependency>
         <dependency>
@@ -42,7 +50,7 @@
         </dependency>
         <dependency>
             <groupId>org.nd4j</groupId>
-            <artifactId>nd4j-jblas</artifactId>
+            <artifactId>nd4j-x86</artifactId>
             <version>${nd4j.version}</version>
         </dependency>
         <dependency>
@@ -52,27 +60,7 @@
         </dependency>
 
     </dependencies>
-    <dependencyManagement>
-        <dependencies>
 
-            <dependency>
-                <groupId>org.nd4j</groupId>
-                <artifactId>nd4j-jblas</artifactId>
-                <version>${nd4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.nd4j</groupId>
-                <artifactId>nd4j-api</artifactId>
-                <version>${nd4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.nd4j</groupId>
-                <artifactId>nd4j-jcublas-7.0</artifactId>
-                <version>${nd4j.version}</version>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
     <build>
 
         <plugins>

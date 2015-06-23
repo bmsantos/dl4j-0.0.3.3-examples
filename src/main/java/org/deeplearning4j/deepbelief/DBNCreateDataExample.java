@@ -33,6 +33,8 @@ public class DBNCreateDataExample {
     private static Logger log = LoggerFactory.getLogger(DBNCreateDataExample.class);
 
     public static void main(String... args) throws Exception {
+
+        Nd4j.getRandom().setSeed(123);
         int numFeatures = 614;
         int iterations = 5;
 
@@ -60,14 +62,13 @@ public class DBNCreateDataExample {
                 .nOut(trainingSet.numOutcomes())
                 .weightInit(WeightInit.DISTRIBUTION)
                 .dist(new NormalDistribution(0,1))
-                .constrainGradientToUnitNorm(true)
                 .iterations(iterations)
                 .activationFunction("tanh")
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
                 .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .learningRate(1e-2f)
-                .optimizationAlgo(OptimizationAlgorithm.ITERATION_GRADIENT_DESCENT)
+                .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT)
                 .list(2)
                 .hiddenLayerSizes(400)
                 .override(1, new ClassifierOverride())
