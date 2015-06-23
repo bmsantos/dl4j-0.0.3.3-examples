@@ -4,6 +4,8 @@ import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
+import org.deeplearning4j.optimize.api.IterationListener;
+import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.plot.BarnesHutTsne;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.slf4j.Logger;
@@ -12,6 +14,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,6 +27,7 @@ public class TSNEBarnesHutExample {
     private static Logger log = LoggerFactory.getLogger(TSNEBarnesHutExample.class);
 
     public static void main(String[] args) throws Exception {
+        int iterations = 1000;
         List<String> cacheList = new ArrayList<>();
 
         log.info("Load & vectorize data....");
@@ -34,7 +38,7 @@ public class TSNEBarnesHutExample {
 
         log.info("Build model....");
         BarnesHutTsne tsne = new BarnesHutTsne.Builder()
-                .setMaxIter(1000)
+                .setMaxIter(iterations)
                 .normalize(true)
                 .stopLyingIteration(250)
                 .learningRate(500)
@@ -47,7 +51,7 @@ public class TSNEBarnesHutExample {
         for(int i = 0; i < vocabCache.numWords(); i++)
             cacheList.add(vocabCache.wordAtIndex(i));
 
-        log.info("Plot Vocab TSNE....");
+        log.info("Store Vocab TSNE....");
         tsne.plot(weights, 2, cacheList, "target/archive-tmp/tsne-barneshut-coords.csv");
 
     }

@@ -16,6 +16,7 @@ import org.deeplearning4j.nn.layers.convolution.preprocessor.ConvolutionInputPre
 import org.deeplearning4j.nn.layers.convolution.preprocessor.ConvolutionPostProcessor;
 import org.deeplearning4j.nn.layers.factory.LayerFactories;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Random;
 
 /**
  * @author sonali
@@ -38,23 +40,32 @@ public class CNNIrisExample {
 
     public static void main(String[] args) {
 
-        int batchSize = 110;
         final int numRows = 2;
         final int numColumns = 2;
+        int outputNum = 3;
+        int numSamples = 150;
+        int batchSize = 110;
+        int iterations = 10;
+        int splitTrainNum = (int) (batchSize * .8);
+        int seed = 123;
+        int listenerFreq = iterations/5;
+
+
         /**
          *Set a neural network configuration with multiple layers
          */
         log.info("Load data....");
-        DataSetIterator irisIter = new IrisDataSetIterator(150, 150);
+        DataSetIterator irisIter = new IrisDataSetIterator(batchSize, numSamples);
         DataSet iris = irisIter.next();
         iris.normalizeZeroMeanZeroUnitVariance();
 
-        SplitTestAndTrain trainTest = iris.splitTestAndTrain(batchSize);
+        SplitTestAndTrain trainTest = iris.splitTestAndTrain(splitTrainNum, new Random(seed));
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .nIn(numRows * numColumns)
-                .nOut(3)
-                .iterations(10)
+                .nOut(outputNum)
+                .seed(seed)
+                .iterations(iterations)
                 .weightInit(WeightInit.VI)
                 .activationFunction("tanh")
                 .filterSize(5, 1, numRows, numColumns)
@@ -79,10 +90,16 @@ public class CNNIrisExample {
         log.info("Build model....");
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq));
 
         log.info("Train model....");
         model.fit(trainTest.getTrain());
+
+        log.info("Evaluate weights....");
+        for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
+            INDArray w = layer.getParam(DefaultParamInitializer.WEIGHT_KEY);
+            log.info("Weights: " + w);
+        }
 
         log.info("Evaluate model....");
         Evaluation eval = new Evaluation();

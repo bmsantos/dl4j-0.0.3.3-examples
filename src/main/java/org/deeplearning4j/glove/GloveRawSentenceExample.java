@@ -32,6 +32,8 @@ public class GloveRawSentenceExample {
     public static void main(String[] args) throws Exception {
         // Customizing params
         Nd4j.ENFORCE_NUMERICAL_STABILITY = true;
+        int batchSize = 1000;
+        int iterations = 30;
         int layerSize = 300;
 
         log.info("Load data....");
@@ -72,10 +74,10 @@ public class GloveRawSentenceExample {
 
         Glove vec = new Glove.Builder()
                 .learningRate(0.005)
-                .batchSize(1000)
+                .batchSize(batchSize)
                 .cache(cache)
                 .coOccurrences(coOccur)
-                .iterations(30)
+                .iterations(iterations)
                 .vectorizer(tfidf)
                 .weights(table)
                 .layerSize(layerSize)
@@ -90,10 +92,12 @@ public class GloveRawSentenceExample {
         vec.fit();
 
         log.info("Evaluate model....");
+        double sim = vec.similarity("people", "money");
+        log.info("Similarity between people and money: " + sim);
         Collection<String> similar = vec.wordsNearest("day",20);
         log.info("Similar words to 'day' : " + similar);
 
-        log.info("Plot TSNE....");
+        log.info("Store TSNE....");
         Tsne tsne = new Tsne.Builder().setMaxIter(200)
                 .learningRate(500).useAdaGrad(false)
                 .normalize(false).usePca(false).build();

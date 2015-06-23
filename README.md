@@ -1,6 +1,6 @@
 DL4J Examples 
 =========================
-*(based on version 0.0.3.3.\*)*
+*based on version 0.0.3.3.\**
 
 Repository of Deeplearning4J neural net examples:
 
@@ -10,7 +10,8 @@ Repository of Deeplearning4J neural net examples:
 - Restricted Boltzmann Machines
 - Recurrent Neural Nets
 - Recursive Neural Nets
-- Word2Vec Examples (includes TSNE)
+- TSNE
+- Word2Vec
 
 ---
 ## Development
@@ -23,28 +24,31 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 
 ## Performance
 
-| **Model Name**      | **Score** | **Status**   | **Training**  |
-|---------------------|-----------|--------------|---------------|
-| CNNIris             | F1 0.14   | Tune         | batch         |
-| CNNMnist            | F1 0.02   | Tune         | batch         |
-| CNNMnist2           | F1 0.02   | Tune         | batch         |
-| DBNCreateData       | F1 0.33   | Tune         | batch         |          	
-| DBNFullMnist        | F1 0.18   | Tune         | full          |
-| DBNIris             | F1 0.15   | Tune         | full          |
-| DBNLWF              | F1 0.0    | Tune         | batch         |
-| DBNMnistRecontruct  | F1 0.017  | Tune         | batch         |
-| DBNSmallMnist       | F1 0.02   | Tune         | full          |
-| GloveRawSentence    | Sim 0     | Tune         | batch         |
-| MLPBackpropIris     | F1 0.16   | Tune         | batch         |
-| RBMCreateData	      | NA        | Validate     | full          |
-| RBMIris             | NA        | Validate     | full          |
-| RecurrentLSTMMnist  | NA        | Validate     | batch         |
-| RecursiveAutoEncoder| NA        | Validate     | batch         |
-| RNTNTweets          | F1 0.48   | Tune         | batch         |
-| RNTNTweets2         | F1 0.48   | Tune         | batch         |
-| TSNEBarnesHut       | NA        | Validate     | NA            |
-| TSNEStandard        | NA        | Validate     | NA            |
-| Word2VecRawText     | Sim 0     | Tune         | batch         |
+| **Model Name**      | **Accuracy** | **F1** | **Status**   | **Training**  |
+|---------------------|--------------|--------|--------------|---------------|
+| CNNIris             | 0.62         | 0.23   | Tune         | batch         | - only predicts 0
+| CNNMnist            | 0.14         | 0.02   | Tune         | batch         | - only predicts 9
+| CNNMnist2           | 0.33         | 0.02   | Tune         | batch         | - only predicts 6
+| DBNCreateData       | 0.50         | 0.33   | Fix          | batch         | - predicts NAN
+| DBNFullMnist        | 0.36         | 0.01   | Tune         | full          | - only predicts 0
+| DBNIris             | 0.68         | 0.62   | Tune         | full          | - predicts all 3
+| DBNLWF              | 5.0E-3       | 3.8E-4 | Tune         | batch         | - only predicts 0
+| DBNMnistReconstruct | 0.34         | 0.02   | Tune         | batch         | - only predicts 0
+| DBNSmallMnist       | 0.42         | 0.02   | Fix          | full          | - only predicts 0
+| GloveRawSentence    | Sim 0.11     | NA     | Tune         | batch         |
+| MLPBackpropIris     | 0.20         | 0.16   | Fix          | batch         | - only predicts 0
+| RBMCreateData	      |              | NA     | Fix          | full          |
+| RBMIris             |              | NA     | Tune         | full          |
+| RecurrentLSTMMnist  |              | NA     | Validate     | batch         |
+| RecursiveAutoEncoder|              | NA     | Validate     | batch         |
+| RNTNTweets          |              | 0.33   | Fix          | batch         | - predicts multiple
+| RNTNTweets2         |              | 0.33   | Fix          | batch         | - predicts multiple
+| TSNEBarnesHut       |              | NA     | Fix          | NA            |
+| TSNEStandard        |              | NA     | Fix          | NA            |
+| Word2VecRawText     | Sim 0.24     | NA     | Fix          | batch         |
     
 
-F1 scores vary with each run. We're starting to add **rng** to help stabilize results. Some examples still require an rng fix. 
+*Sim is simularity
+**F1 scores vary with each run. Seed has been added to some examples to stabilize results. Other examples need adjustments for seed to work.
+
+Running MNIST is significantly slow.

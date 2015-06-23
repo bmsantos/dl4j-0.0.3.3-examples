@@ -24,7 +24,7 @@ public class TSNEStandardExample {
     private static Logger log = LoggerFactory.getLogger(TSNEStandardExample.class);
 
     public static void main(String[] args) throws Exception  {
-
+        int iterations = 1000;
         List<String> cacheList = new ArrayList<>();
 
         log.info("Load & Vectorize data....");
@@ -38,7 +38,7 @@ public class TSNEStandardExample {
 
         log.info("Build model....");
         Tsne tsne = new Tsne.Builder()
-                .setMaxIter(1000)
+                .setMaxIter(iterations)
                 .normalize(false)
                 .learningRate(500)
                 .useAdaGrad(false)

@@ -10,6 +10,7 @@ import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
@@ -34,17 +35,27 @@ public class DBNMnistReconstructExample {
 
     public static void main(String[] args) throws Exception {
 
+        final int numRows = 28;
+        final int numColumns = 28;
+        int outputNum = 10;
+        int numSamples = 1000;
+        int batchSize = 100;
+        int iterations = 10;
+        int seed = 123;
+        int listenerFreq = iterations/5;
+
         log.info("Load data....");
-        DataSetIterator iter = new MnistDataSetIterator(100,1000);
+        DataSetIterator iter = new MnistDataSetIterator(batchSize, numSamples);
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .layer(new RBM())
-                .nIn(784)
-                .nOut(10)
+                .nIn(numRows * numColumns)
+                .nOut(outputNum)
+                .seed(seed)
                 .weightInit(WeightInit.VI)
                 .constrainGradientToUnitNorm(true)
-                .iterations(5)
+                .iterations(iterations)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .learningRate(1e-1f)
                 .list(4)
@@ -53,16 +64,21 @@ public class DBNMnistReconstructExample {
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Train model....");
-
         while(iter.hasNext()) {
             DataSet mnist = iter.next();
             mnist.normalizeZeroMeanZeroUnitVariance();
             model.fit(mnist);
         }
         iter.reset();
+
+        log.info("Evaluate weights....");
+        for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
+            INDArray w = layer.getParam(DefaultParamInitializer.WEIGHT_KEY);
+            log.info("Weights: " + w);
+        }
 
         log.info("Evaluate model....");
         Evaluation eval = new Evaluation();

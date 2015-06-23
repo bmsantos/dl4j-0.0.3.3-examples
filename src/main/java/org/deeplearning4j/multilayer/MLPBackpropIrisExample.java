@@ -7,10 +7,14 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
+import org.deeplearning4j.nn.conf.override.ConfOverride;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
@@ -39,39 +43,40 @@ public class MLPBackpropIrisExample {
 
     public static void main(String[] args) throws IOException {
         // Customizing params
-        Nd4j.MAX_SLICES_TO_PRINT = -1;
-        Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
+        Nd4j.MAX_SLICES_TO_PRINT = 10;
+        Nd4j.MAX_ELEMENTS_PER_SLICE = 10;
+
+        final int numInputs = 4;
+        int outputNum = 3;
+        int numSamples = 150;
+        int batchSize = 150;
+        int iterations = 100;
+        long seed = 123;
+        int listenerFreq = iterations/5;
 
         log.info("Load data....");
-        DataSetIterator iter = new IrisDataSetIterator(10, 150);
+        DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(4)
-                .nOut(3)
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
-                .iterations(1000)
-                .weightInit(WeightInit.DISTRIBUTION)
-                .dist(new UniformDistribution(0, 1))
-                .activationFunction("tanh")
-                .k(1)
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
-                .learningRate(1e-1f)
-                .momentum(0.9)
-                .regularization(true)
-                .l2(2e-4)
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
-                .constrainGradientToUnitNorm(true)
-                .list(2)
-                .hiddenLayerSizes(new int[]{3})
-                .backward(true)
-                .override(1,new ClassifierOverride())
-                .build();
+                .iterations(iterations).weightInit(WeightInit.DISTRIBUTION).dist(new NormalDistribution(0,1e-1))
+                .activationFunction("tanh").learningRate(1e-3).seed(seed).l2(2e-4).regularization(true).l1(0.3)
+                .nIn(numInputs).nOut(outputNum).constrainGradientToUnitNorm(true)
+                .layer(new org.deeplearning4j.nn.conf.layers.OutputLayer())
+                .list(3).backward(true).pretrain(false)
+                .hiddenLayerSizes(new int[]{3, 2}).override(2, new ConfOverride() {
+                    @Override
+                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
+                        builder.activationFunction("softmax");
+                        builder.layer(new org.deeplearning4j.nn.conf.layers.OutputLayer());
+                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
+                    }
+                }).build();
+
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+
         log.info("Train model....");
         while(iter.hasNext()) {
             DataSet iris = iter.next();
@@ -80,9 +85,16 @@ public class MLPBackpropIrisExample {
         }
         iter.reset();
 
+        log.info("Evaluate weights....");
+        for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
+            INDArray w = layer.getParam(DefaultParamInitializer.WEIGHT_KEY);
+            log.info("Weights: " + w);
+        }
+
+
         log.info("Evaluate model....");
         Evaluation eval = new Evaluation();
-        DataSetIterator iterTest = new IrisDataSetIterator(150, 150);
+        DataSetIterator iterTest = new IrisDataSetIterator(numSamples, numSamples);
         DataSet test = iterTest.next();
         test.normalizeZeroMeanZeroUnitVariance();
         INDArray output = model.output(test.getFeatureMatrix());

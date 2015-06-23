@@ -6,9 +6,11 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.RecursiveAutoEncoder;
 import org.deeplearning4j.nn.layers.factory.LayerFactories;
+import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.plot.NeuralNetPlotter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -27,36 +29,49 @@ public class RecursiveAutoEncoderMnistExample {
 
     public static void main(String[] args) throws Exception {
 
+        final int numRows = 28;
+        final int numColumns = 28;
+        int outputNum = 600;
+        int numSamples = 100;
+        int batchSize = 100;
+        int iterations = 10;
+        int seed = 123;
+        int listenerFreq = iterations/5;
+
         log.info("Loading data...");
         MnistDataFetcher fetcher = new MnistDataFetcher(true);
 
         log.info("Building model...");
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
                 .layer(new RecursiveAutoEncoder())
-                .nIn(784)
-                .nOut(600)
+                .nIn(numRows * numColumns)
+                .nOut(outputNum)
+                .seed(seed)
                 .momentum(0.9f)
                 .corruptionLevel(0.3)
                 .weightInit(WeightInit.VI)
                 .constrainGradientToUnitNorm(true)
-                .iterations(10)
+                .iterations(iterations)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .optimizationAlgo(OptimizationAlgorithm.ITERATION_GRADIENT_DESCENT)
                 .learningRate(1e-1f)
                 .build();
         Layer model = LayerFactories.getFactory(conf).create(conf);
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
-        model.setParams(model.params());
+        model.setIterationListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+//        model.setParams(model.params()); TODO - still needed?
+
+        log.info("Evaluate weights....");
+        INDArray w = model.getParam(DefaultParamInitializer.WEIGHT_KEY);
+        log.info("Weights: " + w);
 
         log.info("Training model...");
-
-        for(int i=0 ; i < 100; i++) {
-            fetcher.fetch(100);
+        while(fetcher.hasMore()) {
+            fetcher.fetch(batchSize);
             DataSet data = fetcher.next();
             INDArray input = data.getFeatureMatrix();
             model.fit(input);
         }
-
+        // TODO add listener for graphs
         // Generative Model - unsupervised and requires different evaluation technique
 
     }

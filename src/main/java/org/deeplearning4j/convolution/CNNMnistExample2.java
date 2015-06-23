@@ -44,12 +44,16 @@ public class CNNMnistExample2 {
     private static final Logger log = LoggerFactory.getLogger(CNNMnistExample2.class);
     private static final int numRows = 28;
     private static final int numColumns = 28;
+    private static final int outputNum = 10;
 
     @Option(name="-samples", usage="number of samples to get")
     private static int numSamples = 100;
 
     @Option(name="-batch", usage="batch size for training" )
     private static int batchSize = 100;
+
+    @Option(name="-iterations", usage="number of iterations to train the layer")
+    private static int iterations = 10;
 
     @Option(name="-featureMap", usage="size of feature map. Just enter single value")
     int featureMapSize = 5;
@@ -60,11 +64,10 @@ public class CNNMnistExample2 {
     @Option(name="-hLayerSize", usage="hidden layer size")
     private static int hLayerSize = 18;
 
-    @Option(name="-iterations", usage="number of iterations to train the layer")
-    private static int iterations = 10;
+    private static int splitTrainNum = (int) (numSamples * 0.8);
+    private static int numTestSamples = numSamples - splitTrainNum;
+    private static int listenerFreq = iterations/5;
 
-    private static double numTrainSamples = numSamples * 0.8;
-    private static double numTestSamples = numSamples - numTrainSamples;
 
     static DataSetIterator loadData(int batchSize, int numTrainSamples) throws Exception{
         //SamplingDataSetIterator - TODO make sure representation of each classification in each batch
@@ -76,7 +79,7 @@ public class CNNMnistExample2 {
         // Uniform and Zero have good results
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .nIn(numRows * numColumns)
-                .nOut(10)
+                .nOut(outputNum)
                 .batchSize(batchSize)
                 .iterations(iterations)
                 .weightInit(WeightInit.ZERO)
@@ -107,26 +110,20 @@ public class CNNMnistExample2 {
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
         return model;
     }
 
     static MultiLayerNetwork trainModel(DataSetIterator data, MultiLayerNetwork model){
-        Nd4j.MAX_SLICES_TO_PRINT = 10;
-        Nd4j.MAX_ELEMENTS_PER_SLICE = 10;
         while (data.hasNext()){
             DataSet allData = data.next();
             allData.normalizeZeroMeanZeroUnitVariance();
-//            INDArray labels = allData.getLabels();
-//            log.info(labels.toString());
             model.fit(allData);
         }
         return model;
     }
 
     static void evaluateModel(DataSetIterator data, MultiLayerNetwork model) {
-        Nd4j.MAX_SLICES_TO_PRINT = 10;
-        Nd4j.MAX_ELEMENTS_PER_SLICE = 10;
         data.reset();
 
         Evaluation eval = new Evaluation();
@@ -145,6 +142,9 @@ public class CNNMnistExample2 {
     }
 
     public void exec(String[] args) throws Exception {
+        Nd4j.MAX_SLICES_TO_PRINT = 10;
+        Nd4j.MAX_ELEMENTS_PER_SLICE = 10;
+        Nd4j.MAX_ELEMENTS_PER_SLICE = 10;
 
         CmdLineParser parser = new CmdLineParser(this);
         try {
@@ -157,7 +157,7 @@ public class CNNMnistExample2 {
         }
 
         log.info("Load data....");
-        DataSetIterator dataIter = loadData(batchSize, (int) numTrainSamples);
+        DataSetIterator dataIter = loadData(batchSize, splitTrainNum);
 
         log.info("Build model....");
         MultiLayerNetwork model = buildModel(featureMapSize);
@@ -166,7 +166,7 @@ public class CNNMnistExample2 {
         model = trainModel(dataIter, model);
 
         log.info("Evaluate model....");
-        DataSetIterator testData = loadData((int) numTestSamples, (int) numTestSamples);
+        DataSetIterator testData = loadData((int) numTestSamples, numTestSamples);
         evaluateModel(testData, model);
 
         log.info("****************Example finished********************");

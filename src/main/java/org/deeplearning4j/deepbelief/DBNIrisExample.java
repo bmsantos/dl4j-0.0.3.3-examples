@@ -8,10 +8,12 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
+import org.deeplearning4j.nn.conf.layers.Layer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.conf.rng.DefaultRandom;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
@@ -24,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Random;
 import java.util.Collections;
 
 
@@ -41,50 +43,62 @@ public class DBNIrisExample {
         Nd4j.MAX_SLICES_TO_PRINT = -1;
         Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
 
-        Nd4j.getRandom().setSeed(123);
+        final int numRows = 4;
+        final int numColumns = 1;
+        int outputNum = 3;
+        int numSamples = 150;
+        int batchSize = 150;
+        int iterations = 100;
+        int splitTrainNum = (int) (batchSize * .8);
+        int seed = 123;
+        int listenerFreq = iterations/5;
 
         log.info("Load data....");
-        DataSetIterator iter = new IrisDataSetIterator(150, 150);
+        DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
         DataSet next = iter.next();
         next.normalizeZeroMeanZeroUnitVariance();
 
         log.info("Split data....");
-        SplitTestAndTrain testAndTrain = next.splitTestAndTrain(110);
+        SplitTestAndTrain testAndTrain = next.splitTestAndTrain(splitTrainNum, new Random(seed));
         DataSet train = testAndTrain.getTrain();
         DataSet test = testAndTrain.getTest();
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM()) //the nn's layers will be RBMs
-                .nIn(4) // no. of Input nodes = 4
-                .nOut(3) // no. of Output nodes/labels = 3
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN) //Gaussian transform
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rect. Linear trans.
-                .iterations(100) // make 100 passes of guess and backprop
-                .weightInit(WeightInit.VI) // initializes weights
-                .activationFunction("relu") // sigmoid activation of nodes
-                .k(1) // no. of times you run contrastive divergence
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
-                // your loss function = root-mean-squared error cross entropy
-                .learningRate(1e-1) //the size of the steps your algo takes
-                .momentum(0.9) //a coefficient that modifies the learning rate
-                .regularization(true) // regularization fights overfitting
-                .l2(2e-4) // l2 is one type of regularization
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
-                //optimization algorithms calculate the gradients. 
-                //LBFGS is one type.
+                .layer(new RBM()) // NN layer type
+                .nIn(numRows * numColumns) // # input nodes
+                .nOut(outputNum) // # output nodes
+                .seed(seed) // Seed to lock in weight initialization for tuning
+                .visibleUnit(RBM.VisibleUnit.GAUSSIAN) // Gaussian transformation visible layer
+                .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rectified Linear transformation visible layer
+                .iterations(iterations) // # training iterations predict/classify & backprop
+                .weightInit(WeightInit.DISTRIBUTION) // Weight initialization method
+                .dist(new UniformDistribution(0, 1))  // Weight distribution curve mean and stdev
+                .activationFunction("tanh") // Activation function type
+                .k(1) // # contrastive divergence iterations
+                .lossFunction(LossFunctions.LossFunction.RMSE_XENT) // Loss function type
+                .learningRate(1e-1f) // Backprop step size
+                .momentum(0.9) // Speed of modifying learning rate
+                .regularization(true) // Prevent overfitting
+                .l2(2e-4) // Regularization type
+                .optimizationAlgo(OptimizationAlgorithm.LBFGS) // Backprop method (calculate the gradients)
                 .constrainGradientToUnitNorm(true)
-                .list(2)
-                .hiddenLayerSizes(3) // no. of nodes in your hidden layer. 
-                // this is small.
+                .list(2) // # NN layers (does not count input layer)
+                .hiddenLayerSizes(100) // # fully conntected hidden layer nodes. Add list if multiple layers.
                 .override(1, new ClassifierOverride())
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Train model....");
         model.fit(train);
+
+        log.info("Evaluate weights....");
+        for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
+            INDArray w = layer.getParam(DefaultParamInitializer.WEIGHT_KEY);
+            log.info("Weights: " + w);
+        }
 
         log.info("Evaluate model....");
         Evaluation eval = new Evaluation();
