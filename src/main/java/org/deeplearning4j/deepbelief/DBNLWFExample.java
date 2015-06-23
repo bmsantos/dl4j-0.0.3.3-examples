@@ -39,21 +39,25 @@ public class DBNLWFExample {
         int batchSize = 1000;
         int iterations = 5;
         int seed = 123;
+        int rows = 28;
+        int columns = 28;
         int listenerFreq = iterations/5;
 
         log.info("Load data....");
-        DataSetIterator dataIter = new LFWDataSetIterator(batchSize,numSamples);
+        DataSetIterator dataIter = new LFWDataSetIterator(batchSize,numSamples,rows,columns);
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .layer(new RBM())
                 .nIn(dataIter.inputColumns())
                 .nOut(dataIter.totalOutcomes())
+                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
+                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
                 .seed(seed)
                 .weightInit(WeightInit.XAVIER)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .constrainGradientToUnitNorm(true)
-                .learningRate(1e-3f)
+                .learningRate(1e-3)
                 .list(4)
                 .hiddenLayerSizes(600, 250, 200)
                 .override(3,new ClassifierOverride())
