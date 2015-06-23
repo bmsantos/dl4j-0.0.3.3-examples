@@ -33,8 +33,6 @@ public class DBNFullMnistExample {
     private static Logger log = LoggerFactory.getLogger(DBNFullMnistExample.class);
 
     public static void main(String[] args) throws Exception {
-        Nd4j.dtype = DataBuffer.Type.FLOAT;
-
         final int numRows = 28;
         final int numColumns = 28;
         int outputNum = 10;
@@ -42,7 +40,7 @@ public class DBNFullMnistExample {
         int batchSize = 100;
         int iterations = 10;
         int seed = 123;
-        int listenerFreq = batchSize/5;
+        int listenerFreq = batchSize / 5;
 
         log.info("Load data....");
         DataSetIterator iter = new MnistDataSetIterator(batchSize,numSamples);
@@ -52,9 +50,8 @@ public class DBNFullMnistExample {
                 .layer(new RBM())
                 .nIn(numRows * numColumns)
                 .nOut(outputNum)
-                .weightInit(WeightInit.DISTRIBUTION)
+                .weightInit(WeightInit.XAVIER)
                 .seed(seed)
-                .dist(new NormalDistribution(0, 1))
                 .constrainGradientToUnitNorm(true)
                 .iterations(iterations)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
@@ -66,6 +63,7 @@ public class DBNFullMnistExample {
                 .hiddenLayerSizes(new int[]{500, 250, 200})
                 .override(3, new ClassifierOverride())
                 .build();
+
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
         model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
@@ -79,7 +77,6 @@ public class DBNFullMnistExample {
         DataSetIterator testIter = new MnistDataSetIterator(100,10000);
         while(testIter.hasNext()) {
             DataSet testMnist = testIter.next();
-            testMnist.normalizeZeroMeanZeroUnitVariance();
             INDArray predict2 = model.output(testMnist.getFeatureMatrix());
             eval.eval(testMnist.getLabels(), predict2);
         }
