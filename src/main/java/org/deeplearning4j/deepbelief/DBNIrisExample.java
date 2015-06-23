@@ -9,8 +9,10 @@ import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
 import org.deeplearning4j.nn.conf.layers.Layer;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
+import org.deeplearning4j.nn.conf.override.ConfOverride;
 import org.deeplearning4j.nn.conf.rng.DefaultRandom;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.params.DefaultParamInitializer;
@@ -48,7 +50,7 @@ public class DBNIrisExample {
         int outputNum = 3;
         int numSamples = 150;
         int batchSize = 150;
-        int iterations = 100;
+        int iterations = 1000;
         int splitTrainNum = (int) (batchSize * .8);
         int seed = 123;
         int listenerFreq = iterations/5;
@@ -72,20 +74,23 @@ public class DBNIrisExample {
                 .visibleUnit(RBM.VisibleUnit.GAUSSIAN) // Gaussian transformation visible layer
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rectified Linear transformation visible layer
                 .iterations(iterations) // # training iterations predict/classify & backprop
-                .weightInit(WeightInit.DISTRIBUTION) // Weight initialization method
-                .dist(new UniformDistribution(0, 1))  // Weight distribution curve mean and stdev
-                .activationFunction("tanh") // Activation function type
+                .weightInit(WeightInit.XAVIER) // Weight initialization method
+                .activationFunction("relu") // Activation function type
+                .l2(2e-4).regularization(true).momentum(0.9).constrainGradientToUnitNorm(true)
                 .k(1) // # contrastive divergence iterations
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT) // Loss function type
-                .learningRate(1e-1f) // Backprop step size
-                .momentum(0.9) // Speed of modifying learning rate
-                .regularization(true) // Prevent overfitting
-                .l2(2e-4) // Regularization type
+                .learningRate(1e-3f) // Backprop step size
                 .optimizationAlgo(OptimizationAlgorithm.LBFGS) // Backprop method (calculate the gradients)
-                .constrainGradientToUnitNorm(true)
                 .list(2) // # NN layers (does not count input layer)
-                .hiddenLayerSizes(100) // # fully conntected hidden layer nodes. Add list if multiple layers.
-                .override(1, new ClassifierOverride())
+                .hiddenLayerSizes(3) // # fully connected hidden layer nodes. Add list if multiple layers.
+                .override(1, new ConfOverride() {
+                    @Override
+                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
+                        builder.activationFunction("softmax");
+                        builder.layer(new OutputLayer());
+                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
+                    }
+                }).useDropConnect(true)
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();

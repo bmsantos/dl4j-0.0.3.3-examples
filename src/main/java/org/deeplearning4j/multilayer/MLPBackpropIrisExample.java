@@ -50,8 +50,8 @@ public class MLPBackpropIrisExample {
         int outputNum = 3;
         int numSamples = 150;
         int batchSize = 150;
-        int iterations = 100;
-        long seed = 123;
+        int iterations = 10;
+        long seed = 6;
         int listenerFreq = iterations/5;
 
         log.info("Load data....");
@@ -60,7 +60,8 @@ public class MLPBackpropIrisExample {
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .iterations(iterations).weightInit(WeightInit.DISTRIBUTION).dist(new NormalDistribution(0,1e-1))
-                .activationFunction("tanh").learningRate(1e-3).seed(seed).l2(2e-4).regularization(true).l1(0.3)
+                .activationFunction("tanh").learningRate(1e-3).seed(seed)
+                .l2(2e-4).regularization(true).l1(0.3)
                 .nIn(numInputs).nOut(outputNum).constrainGradientToUnitNorm(true)
                 .layer(new org.deeplearning4j.nn.conf.layers.OutputLayer())
                 .list(3).backward(true).pretrain(false)
