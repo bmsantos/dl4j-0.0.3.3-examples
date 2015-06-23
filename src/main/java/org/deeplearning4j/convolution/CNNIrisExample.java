@@ -8,6 +8,7 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.conf.override.ConfOverride;
@@ -24,6 +25,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.SplitTestAndTrain;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,9 +48,9 @@ public class CNNIrisExample {
         int numSamples = 150;
         int batchSize = 110;
         int iterations = 10;
-        int splitTrainNum = (int) (batchSize * .8);
+        int splitTrainNum = 100;
         int seed = 123;
-        int listenerFreq = iterations/5;
+        int listenerFreq = iterations / 5;
 
 
         /**
@@ -66,13 +68,12 @@ public class CNNIrisExample {
                 .nOut(outputNum)
                 .seed(seed)
                 .iterations(iterations)
-                .weightInit(WeightInit.VI)
-                .activationFunction("tanh")
+                .weightInit(WeightInit.XAVIER)
+                .activationFunction("relu")
                 .filterSize(5, 1, numRows, numColumns)
                 .batchSize(batchSize)
                 .optimizationAlgo(OptimizationAlgorithm.LBFGS)
-                .constrainGradientToUnitNorm(true)
-                .dropOut(0.5)
+                .constrainGradientToUnitNorm(true).l2(2e-4).regularization(true)
                 .list(2)
                 .hiddenLayerSizes(4)
                 .inputPreProcessor(0, new ConvolutionInputPreProcessor(numRows, numColumns))
@@ -84,7 +85,14 @@ public class CNNIrisExample {
                         builder.featureMapSize(2, 2);
                     }
                 })
-                .override(1, new ClassifierOverride())
+                .override(1, new ConfOverride() {
+                    @Override
+                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
+                        builder.activationFunction("softmax");
+                        builder.layer(new OutputLayer());
+                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
+                    }
+                }).useDropConnect(true)
                 .build();
 
         log.info("Build model....");
