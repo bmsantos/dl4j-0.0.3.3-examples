@@ -1,6 +1,7 @@
 package org.deeplearning4j.deepbelief;
 
 
+import org.deeplearning4j.datasets.fetchers.LFWDataFetcher;
 import org.deeplearning4j.datasets.iterator.DataSetIterator;
 import org.deeplearning4j.datasets.iterator.impl.LFWDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
@@ -34,8 +35,8 @@ public class DBNLWFExample {
 
     public static void main(String[] args) throws Exception {
 
-        int numSamples = 1000;
-        int batchSize = 100;
+        int numSamples = LFWDataFetcher.NUM_IMAGES;
+        int batchSize = 1000;
         int iterations = 5;
         int seed = 123;
         int listenerFreq = iterations/5;
@@ -49,8 +50,7 @@ public class DBNLWFExample {
                 .nIn(dataIter.inputColumns())
                 .nOut(dataIter.totalOutcomes())
                 .seed(seed)
-                .weightInit(WeightInit.DISTRIBUTION)
-                .dist(new NormalDistribution(1e-3, 1e-1))
+                .weightInit(WeightInit.XAVIER)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .constrainGradientToUnitNorm(true)
                 .learningRate(1e-3f)
@@ -58,6 +58,7 @@ public class DBNLWFExample {
                 .hiddenLayerSizes(600, 250, 200)
                 .override(3,new ClassifierOverride())
                 .build();
+
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
         model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
@@ -65,7 +66,7 @@ public class DBNLWFExample {
         log.info("Train model....");
         while(dataIter.hasNext()) {
             DataSet next = dataIter.next();
-            next.scale();
+            next.normalizeZeroMeanZeroUnitVariance();
             model.fit(next);
         }
 
