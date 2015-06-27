@@ -1,5 +1,6 @@
 package org.deeplearning4j.word2vec;
 
+import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.plot.BarnesHutTsne;
@@ -28,10 +29,11 @@ public class Word2VecRawTextExample {
 
     public static void main(String[] args) throws Exception {
         // Customizing params
-        Nd4j.ENFORCE_NUMERICAL_STABILITY = true;
         int batchSize = 1000;
-        int iterations = 30;
+        int iterations = 1;
         int layerSize = 300;
+
+        Nd4j.getRandom().setSeed(133);
 
         log.info("Load data....");
         ClassPathResource resource = new ClassPathResource("raw_sentences.txt");
@@ -68,33 +70,19 @@ public class Word2VecRawTextExample {
                 .iterations(iterations)
                 .learningRate(0.025)
                 .minLearningRate(1e-2)
-                .negativeSample(10)
+                .negativeSample(0)
                 .iterate(iter)
                 .tokenizerFactory(tokenizer)
                 .build();
         vec.fit();
 
+        InMemoryLookupTable table = (InMemoryLookupTable) vec.lookupTable();
+        table.getSyn0().diviRowVector(table.getSyn0().norm2(0));
+
         log.info("Evaluate model....");
-        double sim = vec.similarity("people", "money");
-        log.info("Similarity between people and money: " + sim);
         Collection<String> similar = vec.wordsNearest("day", 20);
         log.info("Similar words to 'day' : " + similar);
-
-        log.info("Plot TSNE....");
-        BarnesHutTsne tsne = new BarnesHutTsne.Builder()
-                .setMaxIter(1000)
-                .stopLyingIteration(250)
-                .learningRate(500)
-                .useAdaGrad(false)
-                .theta(0.5)
-                .setMomentum(0.5)
-                .normalize(true)
-                .usePca(false)
-                .build();
-        vec.lookupTable().plotVocab(tsne);
-
         log.info("Save vectors....");
-        SerializationUtils.saveObject(vec, new File("vec.ser"));
         WordVectorSerializer.writeWordVectors(vec, "words.txt");
 
         log.info("****************Example finished********************");
