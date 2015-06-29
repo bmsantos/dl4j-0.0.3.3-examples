@@ -30,7 +30,7 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 | CNNMnist            | 0.14         | 0.02   | Tune         | batch         | - only predicts 9
 | CNNMnist2           | 0.33         | 0.02   | Tune         | batch         | - only predicts 6
 | DBNCreateData       | 0.50         | 0.33   | Fix          | batch         | - predicts NAN
-| DBNFullMnist        | 0.36         | 0.01   | Tune         | full          | - only predicts 0
+| DBNFullMnist        | 0.36         | 0.03   | Tune         | full          |
 | DBNIris             | 0.68         | 0.62   | Tune         | full          | - predicts all 3
 | DBNLWF              | 5.0E-3       | 3.8E-4 | Tune         | batch         | - only predicts 0
 | DBNMnistReconstruct | 0.34         | 0.02   | Tune         | batch         | - only predicts 0
