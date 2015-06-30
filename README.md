@@ -26,17 +26,17 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 
 | **Model Name**      | **Accuracy** | **F1** | **Status**   | **Training**  |
 |---------------------|--------------|--------|--------------|---------------|
-| CNNIris             | 0.62         | 0.23   | Tune         | batch         | - only predicts 0
-| CNNMnist            | 0.14         | 0.02   | Tune         | batch         | - only predicts 9
-| CNNMnist2           | 0.33         | 0.02   | Tune         | batch         | - only predicts 6
+| CNNIris             | 0.75         | 0.736  | Tune         | batch         |
+| CNNMnist            | 0.155        | 0.011  | Fix          | batch         | - only predicts 0
+| CNNMnist2           | 0.05         | 0.009  | Fix          | batch         | - only predicts 0
 | DBNCreateData       | 0.50         | 0.33   | Fix          | batch         | - predicts NAN
-| DBNFullMnist        | 0.36         | 0.03   | Tune         | full          |
-| DBNIris             | 0.68         | 0.62   | Tune         | full          | - predicts all 3
+| DBNFullMnist        | 0.357        | 0.018  | Tune         | full          | - only predicts 0
+| DBNIris             | 0.975        | 0.962  | Tune             | full          | 
 | DBNLWF              | 5.0E-3       | 3.8E-4 | Tune         | batch         | - only predicts 0
-| DBNMnistReconstruct | 0.34         | 0.02   | Tune         | batch         | - only predicts 0
-| DBNSmallMnist       | 0.42         | 0.02   | Fix          | full          | - only predicts 0
-| GloveRawSentence    | Sim 0.11     | NA     | Tune         | batch         |
-| MLPBackpropIris     | 0.20         | 0.16   | Fix          | batch         | - only predicts 0
+| DBNMnistReconstruct | 0.347        | 0.017  | Tune         | batch         | - only predicts 0
+| DBNSmallMnist       | 0.425        | 0.023  | Fix          | full          | - only predicts 0
+| GloveRawSentence    | Sim 0.13     | NA     | Tune         | batch         |
+| MLPBackpropIris     | 0.609        | 0.513  | Tune         | batch         | 
 | RBMCreateData	      |              | NA     | Fix          | full          |
 | RBMIris             |              | NA     | Tune         | full          |
 | RecurrentLSTMMnist  |              | NA     | Validate     | batch         |
