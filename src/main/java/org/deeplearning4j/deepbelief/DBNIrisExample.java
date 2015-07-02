@@ -19,7 +19,8 @@ import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.deeplearning4j.optimize.listeners.ScorePlotterIterationListener;
+import org.deeplearning4j.plot.iterationlistener.GradientPlotterIterationListener;
+import org.deeplearning4j.plot.iterationlistener.LossPlotterIterationListener;
 import org.deeplearning4j.plot.iterationlistener.NeuralNetPlotterIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
@@ -103,8 +104,8 @@ public class DBNIrisExample {
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
         model.setListeners(Arrays.asList(new ScoreIterationListener(listenerFreq),
-                new NeuralNetPlotterIterationListener(listenerFreq),
-                new ScorePlotterIterationListener(listenerFreq)));
+                new GradientPlotterIterationListener(listenerFreq),
+                new LossPlotterIterationListener(listenerFreq)));
 
         log.info("Train model....");
         model.fit(train);
