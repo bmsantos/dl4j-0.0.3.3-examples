@@ -92,7 +92,7 @@ public class RBMIrisExample {
 
         log.info("Visualize training results....");
         NeuralNetPlotter plotter = new NeuralNetPlotter();
-        plotter.plotNetworkGradient(model, model.gradient(), 10);
+        plotter.plotNetworkGradient(model, model.gradient());
     }
 
 

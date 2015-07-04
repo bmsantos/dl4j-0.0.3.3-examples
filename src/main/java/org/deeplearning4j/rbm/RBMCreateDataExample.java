@@ -77,7 +77,7 @@ public class RBMCreateDataExample {
         log.info("Visualize training results....");
         // Work in progress to get NeuralNetPlotter functioning
         NeuralNetPlotter plotter = new NeuralNetPlotter();
-        plotter.plotNetworkGradient(model, model.gradient(), 10);
+        plotter.plotNetworkGradient(model, model.gradient());
     }
 
     // A single layer just learns features and is not supervised learning.

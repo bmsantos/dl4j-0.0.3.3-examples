@@ -59,17 +59,28 @@ public class MLPBackpropIrisExample {
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .iterations(iterations).weightInit(WeightInit.DISTRIBUTION).dist(new NormalDistribution(0,1e-1))
-                .activationFunction("tanh").learningRate(1e-3).seed(seed)
-                .l2(2e-4).regularization(true).l1(0.3)
-                .nIn(numInputs).nOut(outputNum).constrainGradientToUnitNorm(true)
-                .layer(new org.deeplearning4j.nn.conf.layers.OutputLayer())
-                .list(3).backward(true).pretrain(false)
-                .hiddenLayerSizes(new int[]{3, 2}).override(2, new ConfOverride() {
+                .layer(new OutputLayer())
+                .nIn(numInputs)
+                .nOut(outputNum)
+                .seed(seed)
+                .iterations(iterations)
+                .weightInit(WeightInit.DISTRIBUTION)
+                .dist(new NormalDistribution(0, 1e-1))
+                .activationFunction("tanh")
+                .learningRate(1e-3)
+                .regularization(true)
+                .l1(0.3)
+                .l2(2e-4)
+                .constrainGradientToUnitNorm(true)
+                .list(3)
+                .backward(true)
+                .pretrain(false)
+                .hiddenLayerSizes(new int[]{3, 2})
+                .override(2, new ConfOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.activationFunction("softmax");
-                        builder.layer(new org.deeplearning4j.nn.conf.layers.OutputLayer());
+                        builder.layer(new OutputLayer());
                         builder.lossFunction(LossFunctions.LossFunction.MCXENT);
                     }
                 }).build();

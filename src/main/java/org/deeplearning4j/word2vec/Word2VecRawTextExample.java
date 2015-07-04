@@ -80,6 +80,8 @@ public class Word2VecRawTextExample {
         table.getSyn0().diviRowVector(table.getSyn0().norm2(0));
 
         log.info("Evaluate model....");
+        double sim = vec.similarity("people", "money");
+        log.info("Similarity between people and money: " + sim);
         Collection<String> similar = vec.wordsNearest("day", 20);
         log.info("Similar words to 'day' : " + similar);
         log.info("Save vectors....");

@@ -106,7 +106,7 @@ public class RNTNTweetsExample {
 
         log.info("Visualize training results....");
         NeuralNetPlotter plotter = new NeuralNetPlotter();
-        plotter.plotNetworkGradient(rntn, rntn.gradient(), 10);
+        plotter.plotNetworkGradient(rntn, rntn.gradient());
 
 
         rntn.shutdown();
