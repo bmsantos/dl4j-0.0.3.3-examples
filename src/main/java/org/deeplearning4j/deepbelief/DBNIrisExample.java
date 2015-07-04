@@ -44,14 +44,13 @@ public class DBNIrisExample {
         // Customizing params
         Nd4j.MAX_SLICES_TO_PRINT = -1;
         Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
-
         final int numRows = 4;
         final int numColumns = 1;
         int outputNum = 3;
         int numSamples = 150;
         int batchSize = 150;
-        int iterations = 1000;
-        int splitTrainNum = (int) (batchSize * .8);
+        int iterations = 50;
+        int splitTrainNum = (int) (batchSize * .6);
         int seed = 123;
         int listenerFreq = iterations/5;
 
@@ -59,7 +58,7 @@ public class DBNIrisExample {
         DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
         DataSet next = iter.next();
         next.normalizeZeroMeanZeroUnitVariance();
-
+        next.shuffle();
         log.info("Split data....");
         SplitTestAndTrain testAndTrain = next.splitTestAndTrain(splitTrainNum, new Random(seed));
         DataSet train = testAndTrain.getTrain();
@@ -76,7 +75,7 @@ public class DBNIrisExample {
                 .iterations(iterations) // # training iterations predict/classify & backprop
                 .weightInit(WeightInit.XAVIER) // Weight initialization method
                 .activationFunction("relu") // Activation function type
-                .l2(2e-4).regularization(true).momentum(0.9).constrainGradientToUnitNorm(true)
+                .l2(2e-4).regularization(true).momentum(0.9)
                 .k(1) // # contrastive divergence iterations
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT) // Loss function type
                 .learningRate(1e-3f) // Backprop step size
@@ -90,8 +89,10 @@ public class DBNIrisExample {
                         builder.layer(new OutputLayer());
                         builder.lossFunction(LossFunctions.LossFunction.MCXENT);
                     }
-                }).useDropConnect(true)
+                })
                 .build();
+
+
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
         model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
