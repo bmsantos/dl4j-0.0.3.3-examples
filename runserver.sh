@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-java -cp  target/spark-gpu-examples-1.0-SNAPSHOT.jar org.deeplearning4j.ui.UiServer
+java -cp  target/deeplearning4j-examples-0.0.3.3.3-SNAPSHOT.jar org.deeplearning4j.ui.UiServer
