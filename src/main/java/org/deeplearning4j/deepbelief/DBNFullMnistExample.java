@@ -2,6 +2,9 @@ package org.deeplearning4j.deepbelief;
 
 
 import org.deeplearning4j.datasets.iterator.DataSetIterator;
+import org.deeplearning4j.datasets.iterator.MultipleEpochsIterator;
+import org.deeplearning4j.datasets.iterator.SamplingDataSetIterator;
+import org.deeplearning4j.datasets.iterator.impl.ListDataSetIterator;
 import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -14,6 +17,8 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.plot.iterationlistener.ActivationMeanIterationListener;
+import org.deeplearning4j.ui.weights.HistogramIterationListener;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
@@ -37,7 +42,7 @@ public class DBNFullMnistExample {
         final int numColumns = 28;
         int outputNum = 10;
         int numSamples = 60000;
-        int batchSize = 100;
+        int batchSize = 1000;
         int iterations = 10;
         int seed = 123;
         int listenerFreq = batchSize / 5;
@@ -53,33 +58,30 @@ public class DBNFullMnistExample {
                 .weightInit(WeightInit.XAVIER)
                 .seed(seed)
                 .constrainGradientToUnitNorm(true)
-                .iterations(iterations)
+                .iterations(iterations).activationFunction("relu")
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .learningRate(1e-1f)
                 .momentum(0.5)
                 .momentumAfter(Collections.singletonMap(3, 0.9))
                 .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT)
                 .list(4)
-                .hiddenLayerSizes(new int[]{500, 250, 200})
+                .hiddenLayerSizes(new int[]{600, 250, 200})
                 .override(3, new ClassifierOverride())
                 .build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        model.setListeners(Arrays.<IterationListener>asList(new ScoreIterationListener(listenerFreq),new HistogramIterationListener(1),new ActivationMeanIterationListener(model.getLayers()[0].conf().variables())));
 
         log.info("Train model....");
-        model.fit(iter); // achieves end to end pre-training
+        //model.fit(iter); // achieves end to end pre-training
 
         log.info("Evaluate model....");
         Evaluation eval = new Evaluation();
-
-        DataSetIterator testIter = new MnistDataSetIterator(100,10000);
-        while(testIter.hasNext()) {
-            DataSet testMnist = testIter.next();
-            INDArray predict2 = model.output(testMnist.getFeatureMatrix());
-            eval.eval(testMnist.getLabels(), predict2);
-        }
+        DataSet all = new MnistDataSetIterator(60000,60000).next();
+        all.shuffle();
+        DataSetIterator testIter = new MultipleEpochsIterator(3,new SamplingDataSetIterator(all,1000,600000));
+        model.fit(testIter);
 
         log.info(eval.stats());
         log.info("****************Example finished********************");
