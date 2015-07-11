@@ -54,7 +54,7 @@ public class DBNIrisExample {
         int outputNum = 3;
         int numSamples = 150;
         int batchSize = 150;
-        int iterations = 5;
+        int iterations = 25;
         int splitTrainNum = (int) (batchSize * .8);
         int seed = 123;
         int listenerFreq = iterations-1;
@@ -90,7 +90,7 @@ public class DBNIrisExample {
                 .l2(2e-4)
                 .momentum(0.9)
                 .list(2) // # NN layers (does not count input layer)
-                .hiddenLayerSizes(9) // # fully connected hidden layer nodes. Add list if multiple layers.
+                .hiddenLayerSizes(12) // # fully connected hidden layer nodes. Add list if multiple layers.
                 .override(1, new ConfOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {

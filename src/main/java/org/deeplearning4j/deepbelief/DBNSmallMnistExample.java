@@ -5,9 +5,11 @@ import org.deeplearning4j.datasets.iterator.DataSetIterator;
 import org.deeplearning4j.datasets.iterator.MultipleEpochsIterator;
 import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
+import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -17,6 +19,7 @@ import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,18 +37,21 @@ public class DBNSmallMnistExample {
 
 
     public static void main(String[] args) throws Exception {
+        Nd4j.MAX_SLICES_TO_PRINT = 10;
+        Nd4j.MAX_ELEMENTS_PER_SLICE = 40;
 
         final int numRows = 28;
         final int numColumns = 28;
         int outputNum = 10;
-        int numSamples = 100;
+        int numSamples = 1000;
         int batchSize = 100;
         int iterations = 5;
         int seed = 123;
-        int listenerFreq = iterations/5;
+        int listenerFreq = 10;
 
         log.info("Load data....");
-        DataSetIterator iter = new MultipleEpochsIterator(5, new MnistDataSetIterator(batchSize,numSamples));
+//        DataSetIterator iter = new MultipleEpochsIterator(5, new MnistDataSetIterator(batchSize,numSamples));
+        DataSetIterator iter = new MnistDataSetIterator(batchSize,numSamples);
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
@@ -53,15 +59,24 @@ public class DBNSmallMnistExample {
                 .nIn(numRows * numColumns)
                 .nOut(outputNum)
                 .seed(seed)
-                .weightInit(WeightInit.DISTRIBUTION)
-                .dist(new UniformDistribution(0, 1))
+                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
+                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
                 .constrainGradientToUnitNorm(true)
+                .weightInit(WeightInit.SIZE)
                 .iterations(iterations)
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
-                .learningRate(1e-1f)
-                .list(4)
-                .hiddenLayerSizes(600, 500, 400)
-                .override(3, new ClassifierOverride())
+                .learningRate(1e-3f)
+                .list(2)
+                .hiddenLayerSizes(600, 400, 200)
+                .backward(true)
+                .override(3, new ClassifierOverride() {
+                    @Override
+                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
+                        builder.activationFunction("softmax");
+                        builder.layer(new OutputLayer());
+                        builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
+                        builder.optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT);
+                    }
+                })
                 .build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
