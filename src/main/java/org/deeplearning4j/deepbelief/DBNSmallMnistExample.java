@@ -66,14 +66,15 @@ public class DBNSmallMnistExample {
                 .iterations(iterations)
                 .learningRate(1e-3f)
                 .list(2)
-                .hiddenLayerSizes(600,400,200)
+                .hiddenLayerSizes(600, 400, 200)
+                .backward(true)
                 .override(3, new ClassifierOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.activationFunction("softmax");
                         builder.layer(new OutputLayer());
                         builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
-                        builder.optimizationAlgo(OptimizationAlgorithm.ITERATION_GRADIENT_DESCENT);
+                        builder.optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT);
                     }
                 })
                 .build();

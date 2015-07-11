@@ -58,7 +58,6 @@ public class RecursiveAutoEncoderMnistExample {
                 .build();
         Layer model = LayerFactories.getFactory(conf).create(conf);
         model.setIterationListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
-//        model.setParams(model.params()); TODO - still needed?
 
         log.info("Evaluate weights....");
         INDArray w = model.getParam(DefaultParamInitializer.WEIGHT_KEY);
@@ -71,7 +70,7 @@ public class RecursiveAutoEncoderMnistExample {
             INDArray input = data.getFeatureMatrix();
             model.fit(input);
         }
-        // TODO add listener for graphs
+
         // Generative Model - unsupervised and requires different evaluation technique
 
     }
