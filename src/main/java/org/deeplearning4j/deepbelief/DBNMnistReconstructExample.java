@@ -5,8 +5,10 @@ import org.deeplearning4j.datasets.iterator.DataSetIterator;
 import org.deeplearning4j.datasets.iterator.MultipleEpochsIterator;
 import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
+import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -27,7 +29,7 @@ import java.util.Collections;
 /**
  * Created by agibsonccc on 9/11/14.
  *
- * Diff from small conducts pretraining+fine-tuning on every single batch
+ * Diff from small single layer
  */
 public class DBNMnistReconstructExample {
 
@@ -38,9 +40,9 @@ public class DBNMnistReconstructExample {
         final int numRows = 28;
         final int numColumns = 28;
         int outputNum = 10;
-        int numSamples = 1000;
+        int numSamples = 500;
         int batchSize = 100;
-        int iterations = 10;
+        int iterations = 5;
         int seed = 123;
         int listenerFreq = iterations/5;
 
@@ -53,14 +55,24 @@ public class DBNMnistReconstructExample {
                 .nIn(numRows * numColumns)
                 .nOut(outputNum)
                 .seed(seed)
-                .weightInit(WeightInit.VI)
+                .weightInit(WeightInit.XAVIER)
+                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
+                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
+                .activationFunction("tanh")
                 .constrainGradientToUnitNorm(true)
                 .iterations(iterations)
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                .lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                 .learningRate(1e-1f)
-                .list(4)
-                .hiddenLayerSizes(new int[]{600, 500, 400})
-                .override(3,new ClassifierOverride())
+                .list(2)
+                .hiddenLayerSizes(new int[]{1000})
+                .override(1,new ClassifierOverride(){
+                    @Override
+                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
+                        builder.activationFunction("softmax");
+                        builder.layer(new OutputLayer());
+                        builder.optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT);
+                    }
+                })
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();

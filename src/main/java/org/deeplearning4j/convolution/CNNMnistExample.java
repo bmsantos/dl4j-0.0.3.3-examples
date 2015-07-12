@@ -64,10 +64,10 @@ public class CNNMnistExample {
                 .seed(seed)
                 .batchSize(batchSize)
                 .iterations(iterations)
-                .weightInit(WeightInit.UNIFORM)
-                .activationFunction("relu")
+                .weightInit(WeightInit.SIZE)
+                .activationFunction("tanh")
                 .filterSize(8, 1, numRows, numColumns)
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
+                .optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
                 .hiddenLayerSizes(50)
@@ -83,8 +83,15 @@ public class CNNMnistExample {
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.layer(new SubsamplingLayer());
                     }
-                }).override(2, new ClassifierOverride()
-                )
+                }).override(2, new ClassifierOverride(){
+                        public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
+                            builder.layer(new OutputLayer());
+                            builder.activationFunction("softmax");
+                            builder.optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT);
+                            builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
+                        }
+
+                })
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
