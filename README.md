@@ -36,7 +36,7 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 | DBNMnistReconstruct | 0.335        | 0.10   | Tune         | batch         | 
 | DBNSmallMnist       | 0.425        | 0.023  | Fix          | full          | 
 | GloveRawSentence    | Sim 0.13     | NA     | Tune         | batch         |
-| MLPBackpropIris     | 0.609        | 0.513  | Tune         | batch         | 
+| MLPBackpropIris     | 0.42         | 0.18   | Tune         | batch         | 
 | RBMCreateData	      |              | NA     | Fix          | full          |
 | RBMIris             |              | NA     | Tune         | full          |
 | RecurrentLSTMMnist  |              | NA     | Validate     | batch         |

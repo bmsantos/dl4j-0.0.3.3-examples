@@ -9,6 +9,7 @@ import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
+import org.deeplearning4j.nn.conf.layers.AutoEncoder;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
@@ -59,7 +60,7 @@ public class MLPBackpropIrisExample {
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new OutputLayer())
+                .layer(new RBM())
                 .nIn(numInputs)
                 .nOut(outputNum)
                 .seed(seed)
@@ -68,9 +69,7 @@ public class MLPBackpropIrisExample {
                 .dist(new NormalDistribution(0, 1e-1))
                 .activationFunction("tanh")
                 .learningRate(1e-3)
-                .regularization(true)
                 .l1(0.3)
-                .l2(2e-4)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
                 .backward(true)
