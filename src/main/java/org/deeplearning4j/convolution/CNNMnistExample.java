@@ -98,7 +98,6 @@ public class CNNMnistExample {
 
         log.info("Train model....");
         model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
-//        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(1)));
         while(mnistIter.hasNext()) {
             mnist = mnistIter.next();
             mnist.normalizeZeroMeanZeroUnitVariance();
