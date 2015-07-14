@@ -31,7 +31,7 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 | CNNMnist2           | 0.05         | 0.009  | Fix          | batch         | - only predicts 0 & NaN weight
 | DBNCreateData       | 0.50         | 0.33   | Fix          | batch         | - predicts NAN
 | DBNFullMnist        | 0.357        | 0.018  | Tune         | full          | 
-| DBNIris             | 0.975        | 0.971  | Tune         | full          | 
+| DBNIris             | 0.71         | 0.55   | Tune         | full          | 
 | DBNLWF              | 5.0E-3       | 3.8E-4 | Tune         | batch         | 
 | DBNMnistReconstruct | 0.335        | 0.10   | Tune         | batch         | 
 | DBNSmallMnist       | 0.425        | 0.023  | Fix          | full          | 
