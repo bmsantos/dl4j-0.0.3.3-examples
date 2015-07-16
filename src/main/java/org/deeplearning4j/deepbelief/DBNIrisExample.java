@@ -54,10 +54,10 @@ public class DBNIrisExample {
         int outputNum = 3;
         int numSamples = 150;
         int batchSize = 150;
-        int iterations = 25;
+        int iterations = 10;
         int splitTrainNum = (int) (batchSize * .8);
         int seed = 123;
-        int listenerFreq = iterations-1;
+        int listenerFreq = 2;
 
         log.info("Load data....");
         DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
@@ -97,16 +97,18 @@ public class DBNIrisExample {
                         builder.activationFunction("softmax");
                         builder.layer(new OutputLayer());
                         builder.lossFunction(LossFunctions.LossFunction.MCXENT);
-                        builder.optimizationAlgo(OptimizationAlgorithm.ITERATION_GRADIENT_DESCENT);
+                        builder.optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT);
                     }
                 })
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(Arrays.asList(new ScoreIterationListener(listenerFreq),
-                new GradientPlotterIterationListener(listenerFreq),
-                new LossPlotterIterationListener(listenerFreq)));
+//        model.setListeners(Arrays.asList(new ScoreIterationListener(listenerFreq),
+//                new GradientPlotterIterationListener(listenerFreq),
+//                new LossPlotterIterationListener(listenerFreq)));
 
+
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(2)));
         log.info("Train model....");
         model.fit(train);
 

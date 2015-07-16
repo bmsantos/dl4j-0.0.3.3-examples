@@ -72,7 +72,7 @@ public class DBNCreateDataExample {
                 .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .learningRate(1e-2f)
-                .optimizationAlgo(OptimizationAlgorithm.ITERATION_GRADIENT_DESCENT)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .list(2)
                 .hiddenLayerSizes(400)
                 .override(1, new ClassifierOverride())

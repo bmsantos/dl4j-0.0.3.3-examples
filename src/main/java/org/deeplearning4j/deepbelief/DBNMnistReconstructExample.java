@@ -70,7 +70,7 @@ public class DBNMnistReconstructExample {
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.activationFunction("softmax");
                         builder.layer(new OutputLayer());
-                        builder.optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT);
+                        builder.optimizationAlgo(OptimizationAlgorithm.LBFGS);
                     }
                 })
                 .build();

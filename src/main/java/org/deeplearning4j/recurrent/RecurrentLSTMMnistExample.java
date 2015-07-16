@@ -34,9 +34,9 @@ public class RecurrentLSTMMnistExample {
         final int numRows = 28;
         final int numColumns = 28;
         int outputNum = 10;
-        int numSamples = 100;
-        int batchSize = 100;
-        int iterations = 100;
+        int numSamples = 10;
+        int batchSize = 10;
+        int iterations = 1;
         int seed = 123;
         int listenerFreq = iterations/5;
 

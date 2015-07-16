@@ -67,7 +67,7 @@ public class CNNMnistExample {
                 .weightInit(WeightInit.SIZE)
                 .activationFunction("tanh")
                 .filterSize(8, 1, numRows, numColumns)
-                .optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
                 .hiddenLayerSizes(50)
@@ -87,7 +87,6 @@ public class CNNMnistExample {
                         public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                             builder.layer(new OutputLayer());
                             builder.activationFunction("softmax");
-                            builder.optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT);
                             builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
                         }
 
