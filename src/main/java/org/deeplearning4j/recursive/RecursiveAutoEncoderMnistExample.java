@@ -53,7 +53,7 @@ public class RecursiveAutoEncoderMnistExample {
                 .constrainGradientToUnitNorm(true)
                 .iterations(iterations)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
-                .optimizationAlgo(OptimizationAlgorithm.ITERATION_GRADIENT_DESCENT)
+                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
                 .learningRate(1e-1f)
                 .build();
         Layer model = LayerFactories.getFactory(conf).create(conf);

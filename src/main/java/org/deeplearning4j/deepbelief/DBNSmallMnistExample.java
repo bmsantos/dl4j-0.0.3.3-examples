@@ -74,7 +74,7 @@ public class DBNSmallMnistExample {
                         builder.activationFunction("softmax");
                         builder.layer(new OutputLayer());
                         builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
-                        builder.optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT);
+                        builder.optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT);
                     }
                 })
                 .build();
