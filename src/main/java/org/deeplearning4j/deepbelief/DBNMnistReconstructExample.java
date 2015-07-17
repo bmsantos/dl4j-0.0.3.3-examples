@@ -42,7 +42,7 @@ public class DBNMnistReconstructExample {
         int outputNum = 10;
         int numSamples = 500;
         int batchSize = 100;
-        int iterations = 5;
+        int iterations = 10;
         int seed = 123;
         int listenerFreq = iterations/5;
 
@@ -58,11 +58,13 @@ public class DBNMnistReconstructExample {
                 .weightInit(WeightInit.XAVIER)
                 .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
-                .activationFunction("tanh")
+                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
+                .activationFunction("relu")
                 .constrainGradientToUnitNorm(true)
+                .maxNumLineSearchIterations(10)
                 .iterations(iterations)
                 .lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                .learningRate(1e-1f)
+                .learningRate(1e-3f)
                 .list(2)
                 .hiddenLayerSizes(new int[]{1000})
                 .override(1,new ClassifierOverride(){
@@ -70,7 +72,6 @@ public class DBNMnistReconstructExample {
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.activationFunction("softmax");
                         builder.layer(new OutputLayer());
-                        builder.optimizationAlgo(OptimizationAlgorithm.LBFGS);
                     }
                 })
                 .build();

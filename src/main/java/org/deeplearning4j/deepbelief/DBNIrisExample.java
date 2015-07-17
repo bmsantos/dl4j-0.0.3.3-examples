@@ -54,10 +54,10 @@ public class DBNIrisExample {
         int outputNum = 3;
         int numSamples = 150;
         int batchSize = 150;
-        int iterations = 10;
+        int iterations = 20;
         int splitTrainNum = (int) (batchSize * .8);
         int seed = 123;
-        int listenerFreq = 2;
+        int listenerFreq = 1;
 
         log.info("Load data....");
         DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
@@ -79,16 +79,17 @@ public class DBNIrisExample {
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rectified Linear transformation visible layer
                 .iterations(iterations) // # training iterations predict/classify & backprop
                 .weightInit(WeightInit.XAVIER) // Weight initialization method
-                .activationFunction("relu") // Activation function type
+                .activationFunction("sigmoid") // Activation function type
                 .k(1) // # contrastive divergence iterations
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT) // Loss function type
                 .learningRate(1e-3f) // Optimization step size
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS) // Backprop method (calculate the gradients)
+                .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT) // Backprop method (calculate the gradients)
                 .constrainGradientToUnitNorm(true)
                 .useDropConnect(true)
                 .regularization(true)
                 .l2(2e-4)
                 .momentum(0.9)
+                .maxNumLineSearchIterations(20)
                 .list(2) // # NN layers (does not count input layer)
                 .hiddenLayerSizes(12) // # fully connected hidden layer nodes. Add list if multiple layers.
                 .override(1, new ConfOverride() {
@@ -108,7 +109,7 @@ public class DBNIrisExample {
 //                new LossPlotterIterationListener(listenerFreq)));
 
 
-        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(2)));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
         log.info("Train model....");
         model.fit(train);
 
