@@ -39,8 +39,8 @@ public class DBNMnistSingleLayerExample {
         final int numColumns = 28;
         int outputNum = 10;
         int numSamples = 500;
-        int batchSize = 100;
-        int iterations = 10;
+        int batchSize = 500;
+        int iterations = 100;
         int seed = 123;
         int listenerFreq = iterations/5;
 

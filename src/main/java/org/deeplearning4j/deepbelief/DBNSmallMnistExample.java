@@ -45,7 +45,7 @@ public class DBNSmallMnistExample {
         int outputNum = 10;
         int numSamples = 100;
         int batchSize = 100;
-        int iterations = 5;
+        int iterations = 50;
         int seed = 123;
         int listenerFreq = 10;
 
@@ -63,12 +63,14 @@ public class DBNSmallMnistExample {
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
                 .constrainGradientToUnitNorm(true)
                 .weightInit(WeightInit.SIZE)
+                .activationFunction("relu")
+                .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT)
                 .iterations(iterations)
                 .learningRate(1e-3f)
-                .list(2)
+                .list(3)
                 .hiddenLayerSizes(600, 400, 200)
                 .backward(true)
-                .override(3, new ClassifierOverride() {
+                .override(2, new ClassifierOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.activationFunction("softmax");
