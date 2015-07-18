@@ -32,7 +32,7 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 | CNNMnist2           | 0.05         | 0.009  | Fix          | batch         |          | 
 | DBNCreateData       | 0.50         | 0.66   | Fix          | batch         |          | 
 | DBNFullMnist        | 0.39         | 0.20   | Tune         | batch         | 63qm7.25s | - only predicts 1
-| DBNIris             | 0.60         | 0.53   | Tune         | full          | 0m3.78s  | - with listeners on
+| DBNIris             | 0.60         | 0.88   | Tune         | full          | 0m3.78s  | - with listeners on
 | DBNLFW              |              |        | Check        | batch         |          |
 | DBNMnistSingleLayer | 0.35         | 0.24   | Tune         | full          | 0m0.08s  | - only 500 examples
 | DBNSmallMnist       | 0.52         | 0.29   | Tune         | full          | 0m0.09s  | - only 100 examples
