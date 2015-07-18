@@ -47,10 +47,10 @@ public class CNNIrisExample {
         int outputNum = 3;
         int numSamples = 150;
         int batchSize = 110;
-        int iterations = 10;
+        int iterations = 100;
         int splitTrainNum = 100;
         int seed = 123;
-        int listenerFreq = iterations / 5;
+        int listenerFreq = 1;
 
 
         /**
@@ -60,6 +60,7 @@ public class CNNIrisExample {
         DataSetIterator irisIter = new IrisDataSetIterator(batchSize, numSamples);
         DataSet iris = irisIter.next();
         iris.normalizeZeroMeanZeroUnitVariance();
+        iris.shuffle();
 
         SplitTestAndTrain trainTest = iris.splitTestAndTrain(splitTrainNum, new Random(seed));
 
@@ -72,8 +73,7 @@ public class CNNIrisExample {
                 .activationFunction("relu")
                 .filterSize(5, 1, numRows, numColumns)
                 .batchSize(batchSize)
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
-                .constrainGradientToUnitNorm(true).l2(2e-4).regularization(true)
+                .optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT)
                 .list(2)
                 .hiddenLayerSizes(4)
                 .inputPreProcessor(0, new ConvolutionInputPreProcessor(numRows, numColumns))

@@ -7,6 +7,7 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
 import org.deeplearning4j.nn.conf.layers.Layer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
@@ -48,7 +49,7 @@ public class DBNIrisExample {
         // Customizing params
         Nd4j.MAX_SLICES_TO_PRINT = -1;
         Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
-
+        Nd4j.factory().setOrder('c');
         final int numRows = 4;
         final int numColumns = 1;
         int outputNum = 3;
@@ -83,11 +84,11 @@ public class DBNIrisExample {
                 .k(1) // # contrastive divergence iterations
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT) // Loss function type
                 .learningRate(1e-3f) // Optimization step size
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS) // Backprop method (calculate the gradients)
-                .constrainGradientToUnitNorm(true)
+                .optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT) // Backprop method (calculate the gradients)
+                .constrainGradientToUnitNorm(true).updater(Updater.ADAM)
                 .useDropConnect(true)
                 .regularization(true)
-                .l2(2e-4)
+                .l2(2e-4).seed(seed)
                 .momentum(0.9)
                 .list(2) // # NN layers (does not count input layer)
                 .hiddenLayerSizes(9) // # fully connected hidden layer nodes. Add list if multiple layers.
@@ -103,9 +104,7 @@ public class DBNIrisExample {
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(Arrays.asList(new ScoreIterationListener(listenerFreq),
-                new GradientPlotterIterationListener(listenerFreq),
-                new LossPlotterIterationListener(listenerFreq)));
+        model.setListeners(Arrays.<IterationListener>asList(new ScoreIterationListener(listenerFreq)));
 
         log.info("Train model....");
         model.fit(train);
