@@ -63,7 +63,6 @@ public class RecurrentLSTMMnistExample {
             model.fit(mnist.getFeatureMatrix());
         }
 
-        // TODO add listener for graphs
         // Generative model - unsupervised and its time series based which requires different evaluation technique
 
     }

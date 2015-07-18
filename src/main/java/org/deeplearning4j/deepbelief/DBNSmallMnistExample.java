@@ -43,7 +43,7 @@ public class DBNSmallMnistExample {
         final int numRows = 28;
         final int numColumns = 28;
         int outputNum = 10;
-        int numSamples = 1000;
+        int numSamples = 100;
         int batchSize = 100;
         int iterations = 5;
         int seed = 123;

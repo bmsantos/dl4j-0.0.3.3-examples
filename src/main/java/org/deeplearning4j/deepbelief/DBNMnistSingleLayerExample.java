@@ -2,7 +2,6 @@ package org.deeplearning4j.deepbelief;
 
 
 import org.deeplearning4j.datasets.iterator.DataSetIterator;
-import org.deeplearning4j.datasets.iterator.MultipleEpochsIterator;
 import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -22,7 +21,6 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 
@@ -31,9 +29,9 @@ import java.util.Collections;
  *
  * Diff from small single layer
  */
-public class DBNMnistReconstructExample {
+public class DBNMnistSingleLayerExample {
 
-    private static Logger log = LoggerFactory.getLogger(DBNMnistReconstructExample.class);
+    private static Logger log = LoggerFactory.getLogger(DBNMnistSingleLayerExample.class);
 
     public static void main(String[] args) throws Exception {
 
@@ -67,7 +65,7 @@ public class DBNMnistReconstructExample {
                 .learningRate(1e-3f)
                 .list(2)
                 .hiddenLayerSizes(new int[]{1000})
-                .override(1,new ClassifierOverride(){
+                .override(1, new ClassifierOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.activationFunction("softmax");
