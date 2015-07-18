@@ -6,6 +6,7 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.conf.override.ConfOverride;
@@ -20,6 +21,8 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.SplitTestAndTrain;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,13 +36,15 @@ public class CNNMnistExample {
     private static final Logger log = LoggerFactory.getLogger(CNNMnistExample.class);
 
     public static void main(String[] args) throws Exception {
+        Nd4j.MAX_SLICES_TO_PRINT = -1;
+        Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
 
         final int numRows = 28;
         final int numColumns = 28;
         int outputNum = 10;
         int numSamples = 100;
-        int batchSize = 10;
-        int iterations = 5;
+        int batchSize = 100;
+        int iterations = 10;
         int splitTrainNum = (int) (batchSize*.8);
         int seed = 123;
         int listenerFreq = iterations/5;
@@ -59,10 +64,10 @@ public class CNNMnistExample {
                 .seed(seed)
                 .batchSize(batchSize)
                 .iterations(iterations)
-                .weightInit(WeightInit.UNIFORM)
-                .activationFunction("sigmoid")
+                .weightInit(WeightInit.SIZE)
+                .activationFunction("tanh")
                 .filterSize(8, 1, numRows, numColumns)
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
                 .hiddenLayerSizes(50)
@@ -78,14 +83,21 @@ public class CNNMnistExample {
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.layer(new SubsamplingLayer());
                     }
-                }).override(2, new ClassifierOverride())
+                }).override(2, new ClassifierOverride(){
+                        public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
+                            builder.layer(new OutputLayer());
+                            builder.activationFunction("softmax");
+                            builder.optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT);
+                            builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
+                        }
+
+                })
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
 
         log.info("Train model....");
         model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
-//        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(1)));
         while(mnistIter.hasNext()) {
             mnist = mnistIter.next();
             mnist.normalizeZeroMeanZeroUnitVariance();

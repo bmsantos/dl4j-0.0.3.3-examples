@@ -7,7 +7,6 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
 import org.deeplearning4j.nn.conf.layers.AutoEncoder;
@@ -15,13 +14,11 @@ import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.conf.override.ConfOverride;
-import org.deeplearning4j.nn.conf.stepfunctions.NegativeDefaultStepFunction;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.SplitTestAndTrain;
@@ -49,28 +46,31 @@ public class MLPBackpropIrisExample {
         // Customizing params
         Nd4j.MAX_SLICES_TO_PRINT = 10;
         Nd4j.MAX_ELEMENTS_PER_SLICE = 10;
-        Nd4j.dtype = DataBuffer.Type.DOUBLE;
+
         final int numInputs = 4;
         int outputNum = 3;
         int numSamples = 150;
         int batchSize = 150;
-        int iterations = 3;
+        int iterations = 10;
         long seed = 6;
-        Nd4j.ENFORCE_NUMERICAL_STABILITY = true;
-        int listenerFreq = 1;
+        int listenerFreq = iterations/5;
+
         log.info("Load data....");
         DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new AutoEncoder())
+                .layer(new RBM())
                 .nIn(numInputs)
                 .nOut(outputNum)
-                .seed(seed).dropOut(0.5)
-                .iterations(iterations).updater(Updater.ADAGRAD).useDropConnect(true)
-                .weightInit(WeightInit.XAVIER).stepFunction(new NegativeDefaultStepFunction())
-                .activationFunction("relu").corruptionLevel(0.5)
-                .learningRate(1e-6)
+                .seed(seed)
+                .iterations(iterations)
+                .weightInit(WeightInit.DISTRIBUTION)
+                .dist(new NormalDistribution(0, 1e-1))
+                .activationFunction("tanh")
+                .learningRate(1e-3)
+                .l1(0.3)
+                .constrainGradientToUnitNorm(true)
                 .list(3)
                 .backward(true)
                 .pretrain(false)
@@ -108,7 +108,7 @@ public class MLPBackpropIrisExample {
         DataSetIterator iterTest = new IrisDataSetIterator(numSamples, numSamples);
         DataSet test = iterTest.next();
         test.normalizeZeroMeanZeroUnitVariance();
-        INDArray output = model.output(test.getFeatureMatrix(),true);
+        INDArray output = model.output(test.getFeatureMatrix());
         eval.eval(test.getLabels(), output);
         log.info(eval.stats());
         log.info("****************Example finished********************");

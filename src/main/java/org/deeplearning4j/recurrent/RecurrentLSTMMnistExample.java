@@ -34,9 +34,9 @@ public class RecurrentLSTMMnistExample {
         final int numRows = 28;
         final int numColumns = 28;
         int outputNum = 10;
-        int numSamples = 100;
-        int batchSize = 100;
-        int iterations = 100;
+        int numSamples = 10;
+        int batchSize = 10;
+        int iterations = 1;
         int seed = 123;
         int listenerFreq = iterations/5;
 
@@ -54,7 +54,7 @@ public class RecurrentLSTMMnistExample {
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .build();
         Layer model = LayerFactories.getFactory(conf.getLayer()).create(conf);
-        model.setIterationListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Training model...");
         for(int i=0 ; i < (numSamples/batchSize); i++) {
@@ -63,7 +63,6 @@ public class RecurrentLSTMMnistExample {
             model.fit(mnist.getFeatureMatrix());
         }
 
-        // TODO add listener for graphs
         // Generative model - unsupervised and its time series based which requires different evaluation technique
 
     }

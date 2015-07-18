@@ -9,6 +9,7 @@ import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
 import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.conf.override.ConfOverride;
@@ -56,13 +57,13 @@ public class CNNMnistExample2 {
     private static int iterations = 10;
 
     @Option(name="-featureMap", usage="size of feature map. Just enter single value")
-    int featureMapSize = 5;
+    int featureMapSize = 9;
 
     @Option(name="-learningRate", usage="learning rate")
     private static double learningRate = 0.13;
 
     @Option(name="-hLayerSize", usage="hidden layer size")
-    private static int hLayerSize = 18;
+    private static int hLayerSize = 50;
 
     private static int splitTrainNum = (int) (numSamples * 0.8);
     private static int numTestSamples = numSamples - splitTrainNum;
@@ -80,15 +81,14 @@ public class CNNMnistExample2 {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .nIn(numRows * numColumns)
                 .nOut(outputNum)
+                .seed(123)
                 .batchSize(batchSize)
                 .iterations(iterations)
-                .weightInit(WeightInit.ZERO)
-                .seed(3)
-                .activationFunction("sigmoid")
+                .weightInit(WeightInit.SIZE)
+                .activationFunction("relu")
                 .filterSize(8, 1, numRows, numColumns)
-                .lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                 .learningRate(learningRate)
-                .optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT)
+                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
                 .hiddenLayerSizes(hLayerSize)
@@ -106,7 +106,14 @@ public class CNNMnistExample2 {
                         builder.layer(new SubsamplingLayer());
                     }
                 })
-                .override(2, new ClassifierOverride())
+                .override(2, new ClassifierOverride() {
+                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
+                        builder.layer(new OutputLayer());
+                        builder.activationFunction("softmax");
+                        builder.optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT);
+                        builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
+                    }
+                })
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();

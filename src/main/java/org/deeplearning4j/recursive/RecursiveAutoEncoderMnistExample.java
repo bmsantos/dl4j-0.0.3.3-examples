@@ -11,6 +11,8 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.plot.NeuralNetPlotter;
+import org.deeplearning4j.plot.iterationlistener.GradientPlotterIterationListener;
+import org.deeplearning4j.plot.iterationlistener.LossPlotterIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -53,12 +55,13 @@ public class RecursiveAutoEncoderMnistExample {
                 .constrainGradientToUnitNorm(true)
                 .iterations(iterations)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
-                .optimizationAlgo(OptimizationAlgorithm.ITERATION_GRADIENT_DESCENT)
+                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
                 .learningRate(1e-1f)
                 .build();
         Layer model = LayerFactories.getFactory(conf).create(conf);
-        model.setIterationListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
-//        model.setParams(model.params()); TODO - still needed?
+        model.setListeners(Arrays.asList(new ScoreIterationListener(listenerFreq),
+                new GradientPlotterIterationListener(listenerFreq),
+                new LossPlotterIterationListener(listenerFreq)));
 
         log.info("Evaluate weights....");
         INDArray w = model.getParam(DefaultParamInitializer.WEIGHT_KEY);
@@ -71,7 +74,7 @@ public class RecursiveAutoEncoderMnistExample {
             INDArray input = data.getFeatureMatrix();
             model.fit(input);
         }
-        // TODO add listener for graphs
+
         // Generative Model - unsupervised and requires different evaluation technique
 
     }

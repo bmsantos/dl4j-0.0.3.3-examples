@@ -49,63 +49,63 @@ public class DBNIrisExample {
         // Customizing params
         Nd4j.MAX_SLICES_TO_PRINT = -1;
         Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
-        Nd4j.factory().setOrder('c');
+
         final int numRows = 4;
         final int numColumns = 1;
         int outputNum = 3;
         int numSamples = 150;
         int batchSize = 150;
-        int iterations = 5;
+        int iterations = 2;
         int splitTrainNum = (int) (batchSize * .8);
         int seed = 123;
-        int listenerFreq = iterations-1;
+        int listenerFreq = 1;
 
         log.info("Load data....");
         DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
         DataSet next = iter.next();
-        next.normalizeZeroMeanZeroUnitVariance();
+        next.scale();
 
         log.info("Split data....");
         SplitTestAndTrain testAndTrain = next.splitTestAndTrain(splitTrainNum, new Random(seed));
         DataSet train = testAndTrain.getTrain();
         DataSet test = testAndTrain.getTest();
-
+        Nd4j.ENFORCE_NUMERICAL_STABILITY = true;
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .layer(new RBM()) // NN layer type
                 .nIn(numRows * numColumns) // # input nodes
                 .nOut(outputNum) // # output nodes
                 .seed(seed) // Seed to lock in weight initialization for tuning
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN) // Gaussian transformation visible layer
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rectified Linear transformation visible layer
+                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
+                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
                 .iterations(iterations) // # training iterations predict/classify & backprop
                 .weightInit(WeightInit.XAVIER) // Weight initialization method
-                .activationFunction("relu") // Activation function type
+                .activationFunction("tanh") // Activation function type
                 .k(1) // # contrastive divergence iterations
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT) // Loss function type
                 .learningRate(1e-3f) // Optimization step size
-                .optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT) // Backprop method (calculate the gradients)
-                .constrainGradientToUnitNorm(true).updater(Updater.ADAM)
-                .useDropConnect(true)
-                .regularization(true)
-                .l2(2e-4).seed(seed)
-                .momentum(0.9)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT) // Backprop method (calculate the gradients)
+                .momentum(0.9).updater(Updater.ADAGRAD).constrainGradientToUnitNorm(true).dropOut(0.5).useDropConnect(true)
+                .maxNumLineSearchIterations(5)
                 .list(2) // # NN layers (does not count input layer)
-                .hiddenLayerSizes(9) // # fully connected hidden layer nodes. Add list if multiple layers.
+                .hiddenLayerSizes(3,2) // # fully connected hidden layer nodes. Add list if multiple layers.
                 .override(1, new ConfOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.activationFunction("softmax");
                         builder.layer(new OutputLayer());
                         builder.lossFunction(LossFunctions.LossFunction.MCXENT);
-                        builder.optimizationAlgo(OptimizationAlgorithm.ITERATION_GRADIENT_DESCENT);
                     }
                 })
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(Arrays.<IterationListener>asList(new ScoreIterationListener(listenerFreq)));
+//        model.setListeners(Arrays.asList(new ScoreIterationListener(listenerFreq),
+//                new GradientPlotterIterationListener(listenerFreq),
+//                new LossPlotterIterationListener(listenerFreq)));
 
+
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
         log.info("Train model....");
         model.fit(train);
 
