@@ -8,6 +8,7 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -37,8 +38,8 @@ public class DBNFullMnistExample {
         final int numColumns = 28;
         int outputNum = 10;
         int numSamples = 60000;
-        int batchSize = 100;
-        int iterations = 10;
+        int batchSize = 1000;
+        int iterations = 5;
         int seed = 123;
         int listenerFreq = batchSize / 5;
 
@@ -51,17 +52,28 @@ public class DBNFullMnistExample {
                 .nIn(numRows * numColumns)
                 .nOut(outputNum)
                 .weightInit(WeightInit.XAVIER)
+                .activationFunction("relu")
                 .seed(seed)
+                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
+                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
                 .constrainGradientToUnitNorm(true)
                 .iterations(iterations)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
-                .learningRate(1e-1f)
+                .learningRate(1e-3f)
                 .momentum(0.5)
                 .momentumAfter(Collections.singletonMap(3, 0.9))
                 .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT)
-                .list(4)
+                .list(3)
                 .hiddenLayerSizes(new int[]{500, 250, 200})
-                .override(3, new ClassifierOverride())
+                .override(2, new ClassifierOverride(){
+                    @Override
+                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
+                        builder.activationFunction("softmax");
+                        builder.layer(new OutputLayer());
+                        builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
+                        builder.optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT);
+                    }
+                })
                 .build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);

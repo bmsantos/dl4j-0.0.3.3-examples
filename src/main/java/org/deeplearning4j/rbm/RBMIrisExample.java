@@ -81,7 +81,7 @@ public class RBMIrisExample {
                 .constrainGradientToUnitNorm(true)
                 .build();
         Layer model = LayerFactories.getFactory(conf.getLayer()).create(conf);
-        model.setIterationListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Evaluate weights....");
         INDArray w = model.getParam(DefaultParamInitializer.WEIGHT_KEY);

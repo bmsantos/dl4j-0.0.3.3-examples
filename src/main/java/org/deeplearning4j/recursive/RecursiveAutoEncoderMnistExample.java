@@ -59,7 +59,7 @@ public class RecursiveAutoEncoderMnistExample {
                 .learningRate(1e-1f)
                 .build();
         Layer model = LayerFactories.getFactory(conf).create(conf);
-        model.setIterationListeners(Arrays.asList(new ScoreIterationListener(listenerFreq),
+        model.setListeners(Arrays.asList(new ScoreIterationListener(listenerFreq),
                 new GradientPlotterIterationListener(listenerFreq),
                 new LossPlotterIterationListener(listenerFreq)));
 
