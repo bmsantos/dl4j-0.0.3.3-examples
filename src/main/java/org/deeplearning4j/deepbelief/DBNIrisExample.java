@@ -85,8 +85,11 @@ public class DBNIrisExample {
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT) // Loss function type
                 .learningRate(1e-3f) // Optimization step size
                 .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT) // Backprop method (calculate the gradients)
-                .momentum(0.9).updater(Updater.ADAGRAD).constrainGradientToUnitNorm(true).dropOut(0.5).useDropConnect(true)
-                .maxNumLineSearchIterations(5)
+                .momentum(0.9)
+                .updater(Updater.ADAGRAD)
+                .constrainGradientToUnitNorm(true)
+                .dropOut(0.5)
+                .useDropConnect(true)
                 .list(2) // # NN layers (does not count input layer)
                 .hiddenLayerSizes(3,2) // # fully connected hidden layer nodes. Add list if multiple layers.
                 .override(1, new ConfOverride() {
