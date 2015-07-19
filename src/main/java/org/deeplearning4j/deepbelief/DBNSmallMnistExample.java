@@ -8,19 +8,15 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.params.DefaultParamInitializer;
-import org.deeplearning4j.nn.params.PretrainParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.deeplearning4j.plot.iterationlistener.NeuralNetPlotterIterationListener;
-import org.deeplearning4j.plot.iterationlistener.PlotFiltersIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
@@ -47,13 +43,14 @@ public class DBNSmallMnistExample {
         final int numRows = 28;
         final int numColumns = 28;
         int outputNum = 10;
-        int numSamples = 1000;
-        int batchSize = 1000;
-        int iterations = 100;
+        int numSamples = 100;
+        int batchSize = 100;
+        int iterations = 50;
         int seed = 123;
-        int listenerFreq = 1;
+        int listenerFreq = 10;
 
         log.info("Load data....");
+//        DataSetIterator iter = new MultipleEpochsIterator(5, new MnistDataSetIterator(batchSize,numSamples));
         DataSetIterator iter = new MnistDataSetIterator(batchSize,numSamples);
 
         log.info("Build model....");
@@ -62,33 +59,41 @@ public class DBNSmallMnistExample {
                 .nIn(numRows * numColumns)
                 .nOut(outputNum)
                 .seed(seed)
-                .weightInit(WeightInit.XAVIER)
-                .lossFunction(LossFunctions.LossFunction.RECONSTRUCTION_CROSSENTROPY)
-                .activationFunction("sigmoid")
-                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
-                .iterations(iterations).l1(1e-1).regularization(true).constrainGradientToUnitNorm(true)
-                .learningRate(1e-1f).updater(Updater.ADADELTA)
+                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
+                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
+                .constrainGradientToUnitNorm(true)
+                .weightInit(WeightInit.SIZE)
+                .activationFunction("relu")
+                .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT)
+                .iterations(iterations)
+                .learningRate(1e-3f)
                 .list(3)
                 .hiddenLayerSizes(600, 400, 200)
+                .backward(true)
                 .override(2, new ClassifierOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.activationFunction("softmax");
                         builder.layer(new OutputLayer());
                         builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
+                        builder.optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT);
                     }
                 })
                 .build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(Arrays.asList(new ScoreIterationListener(listenerFreq), new NeuralNetPlotterIterationListener(50)));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Train model....");
-        model.fit(iter.next());
+        model.fit(iter);
         iter.reset();
 
-
+        log.info("Evaluate weights....");
+        for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
+            INDArray w = layer.getParam(DefaultParamInitializer.WEIGHT_KEY);
+            log.info("Weights: " + w);
+        }
 
         log.info("Evaluate model....");
         Evaluation eval = new Evaluation();
