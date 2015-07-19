@@ -7,6 +7,7 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
 import org.deeplearning4j.nn.conf.layers.AutoEncoder;
@@ -58,29 +59,29 @@ public class MLPBackpropIrisExample {
         log.info("Load data....");
         DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
 
+        Nd4j.ENFORCE_NUMERICAL_STABILITY = true;
+
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
+                .layer(new AutoEncoder())
                 .nIn(numInputs)
                 .nOut(outputNum)
                 .seed(seed)
                 .iterations(iterations)
-                .weightInit(WeightInit.DISTRIBUTION)
-                .dist(new NormalDistribution(0, 1e-1))
-                .activationFunction("tanh")
+                .weightInit(WeightInit.XAVIER)
+                .activationFunction("sigmoid")
                 .learningRate(1e-3)
-                .l1(0.3)
-                .constrainGradientToUnitNorm(true)
-                .list(3)
+                .updater(Updater.ADAGRAD)
+                .list(2)
                 .backward(true)
                 .pretrain(false)
-                .hiddenLayerSizes(new int[]{3, 2})
-                .override(2, new ConfOverride() {
+                .hiddenLayerSizes(3)
+                .override(1, new ConfOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.activationFunction("softmax");
                         builder.layer(new OutputLayer());
-                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
+                        builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
                     }
                 }).build();
 
