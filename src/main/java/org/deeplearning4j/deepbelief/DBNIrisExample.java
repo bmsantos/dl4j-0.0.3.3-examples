@@ -80,7 +80,7 @@ public class DBNIrisExample {
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
                 .iterations(iterations) // # training iterations predict/classify & backprop
                 .weightInit(WeightInit.XAVIER) // Weight initialization method
-                .activationFunction("tanh") // Activation function type
+                .activationFunction("relu") // Activation function type
                 .k(1) // # contrastive divergence iterations
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT) // Loss function type
                 .learningRate(1e-3f) // Optimization step size
@@ -88,7 +88,7 @@ public class DBNIrisExample {
                 .momentum(0.9).updater(Updater.ADAGRAD).constrainGradientToUnitNorm(true).dropOut(0.5).useDropConnect(true)
                 .maxNumLineSearchIterations(5)
                 .list(2) // # NN layers (does not count input layer)
-                .hiddenLayerSizes(3,2) // # fully connected hidden layer nodes. Add list if multiple layers.
+                .hiddenLayerSizes(3) // # fully connected hidden layer nodes. Add list if multiple layers.
                 .override(1, new ConfOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {

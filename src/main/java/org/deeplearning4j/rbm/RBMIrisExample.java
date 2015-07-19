@@ -72,7 +72,7 @@ public class RBMIrisExample {
                 .dist(new UniformDistribution(0, 1))  // Weight distribution curve mean and stdev
                 .activationFunction("tanh") // Activation function type
                 .k(1) // # contrastive divergence iterations
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT) // Loss function type
+                .lossFunction(LossFunctions.LossFunction.SQUARED_LOSS) // Loss function type
                 .learningRate(1e-1f) // Backprop step size
                 .momentum(0.9) // Speed of modifying learning rate
                 .regularization(true) // Prevent overfitting

@@ -59,24 +59,20 @@ public class DBNSmallMnistExample {
                 .nIn(numRows * numColumns)
                 .nOut(outputNum)
                 .seed(seed)
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
-                .constrainGradientToUnitNorm(true)
-                .weightInit(WeightInit.SIZE)
-                .activationFunction("relu")
+                .weightInit(WeightInit.XAVIER).lossFunction(LossFunctions.LossFunction.SQUARED_LOSS)
+                .activationFunction("sigmoid")
                 .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT)
-                .iterations(iterations)
-                .learningRate(1e-3f)
+                .iterations(iterations).l1(1e-1).l2(1e-3).constrainGradientToUnitNorm(true)
+                .regularization(true)
+                .learningRate(1e-1f)
                 .list(3)
                 .hiddenLayerSizes(600, 400, 200)
-                .backward(true)
                 .override(2, new ClassifierOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.activationFunction("softmax");
                         builder.layer(new OutputLayer());
-                        builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
-                        builder.optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT);
+                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
                     }
                 })
                 .build();

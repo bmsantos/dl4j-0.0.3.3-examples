@@ -51,7 +51,7 @@ public class MLPBackpropIrisExample {
         int outputNum = 3;
         int numSamples = 150;
         int batchSize = 150;
-        int iterations = 10;
+        int iterations = 100;
         long seed = 6;
         int listenerFreq = iterations/5;
 
@@ -65,11 +65,10 @@ public class MLPBackpropIrisExample {
                 .nOut(outputNum)
                 .seed(seed)
                 .iterations(iterations)
-                .weightInit(WeightInit.DISTRIBUTION)
-                .dist(new NormalDistribution(0, 1e-1))
+                .weightInit(WeightInit.XAVIER)
                 .activationFunction("tanh")
                 .learningRate(1e-3)
-                .l1(0.3)
+                .l1(0.3).regularization(true).l2(1e-3)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
                 .backward(true)
