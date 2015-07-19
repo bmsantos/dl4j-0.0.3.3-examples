@@ -27,11 +27,11 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 
 | **Model Name**      | **Accuracy** | **F1** | **Status**   | **Training**  |**Timing**|
 |---------------------|--------------|--------|--------------|---------------|----------|
-| CNNIris             | 0.48         | 0.19   | Fix          | full          |          | 
-| CNNMnist            | 0.34         | 0.032  | Fix          | full          |          | 
-| CNNMnist2           | 0.05         | 0.009  | Fix          | batch         |          | 
+| CNNIris             | 0.60         | 0.71   | Tune         | full          |          | 
+| CNNMnist            | 0.41         | 0.26   | Tune         | full          |          | 
+| CNNMnist2           | 0.20         | 0.09   | Fix          | batch         |          | 
 | DBNCreateData       | 0.50         | 0.66   | Fix          | batch         |          | 
-| DBNFullMnist        | 0.39         | 0.20   | Tune         | batch         | 63qm7.25s | - only predicts 1
+| DBNFullMnist        | 0.39         | 0.20   | Tune         | batch         | 63m7.25s | - only predicts 1
 | DBNIris             | 0.83         | 0.88   | Tune         | full          | 0m3.78s  | - with listeners on
 | DBNLFW              |              |        | Check        | batch         |          |
 | DBNMnistSingleLayer | 0.35         | 0.18   | Tune         | full          | 0m0.08s  | - only 500 examples
