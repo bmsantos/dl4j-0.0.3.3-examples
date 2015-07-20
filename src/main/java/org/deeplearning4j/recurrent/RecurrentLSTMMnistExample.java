@@ -54,7 +54,7 @@ public class RecurrentLSTMMnistExample {
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .build();
         Layer model = LayerFactories.getFactory(conf.getLayer()).create(conf);
-        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Training model...");
         for(int i=0 ; i < (numSamples/batchSize); i++) {

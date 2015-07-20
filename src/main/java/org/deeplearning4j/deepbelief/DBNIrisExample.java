@@ -108,7 +108,7 @@ public class DBNIrisExample {
 //                new LossPlotterIterationListener(listenerFreq)));
 
 
-        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
         log.info("Train model....");
         model.fit(train);
 
