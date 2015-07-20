@@ -9,10 +9,12 @@ import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
+import org.deeplearning4j.nn.conf.layers.AutoEncoder;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.conf.override.ConfOverride;
+import org.deeplearning4j.nn.layers.factory.LayerFactories;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
@@ -50,7 +52,7 @@ public class MLPBackpropIrisExample {
         int outputNum = 3;
         int numSamples = 150;
         int batchSize = 150;
-        int iterations = 10;
+        int iterations = 100;
         long seed = 6;
         int listenerFreq = iterations/5;
 
@@ -58,36 +60,55 @@ public class MLPBackpropIrisExample {
         DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
 
         log.info("Build model....");
-        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new OutputLayer())
-                .nIn(numInputs)
-                .nOut(outputNum)
-                .seed(seed)
-                .iterations(iterations)
-                .weightInit(WeightInit.DISTRIBUTION)
-                .dist(new NormalDistribution(0, 1e-1))
-                .activationFunction("tanh")
-                .learningRate(1e-3)
-                .regularization(true)
-                .l1(0.3)
-                .l2(2e-4)
-                .constrainGradientToUnitNorm(true)
-                .list(3)
-                .backward(true)
-                .pretrain(false)
-                .hiddenLayerSizes(new int[]{3, 2})
-                .override(2, new ConfOverride() {
-                    @Override
-                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
-                        builder.activationFunction("softmax");
-                        builder.layer(new OutputLayer());
-                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
-                    }
-                }).build();
+        NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
+                .lossFunction(LossFunctions.LossFunction.MCXENT)
+                .optimizationAlgo(OptimizationAlgorithm.ITERATION_GRADIENT_DESCENT)
+                .activationFunction("softmax")
+                .iterations(5).weightInit(WeightInit.XAVIER)
+                .learningRate(1e-1).nIn(4).nOut(3).layer(new org.deeplearning4j.nn.conf.layers.OutputLayer()).build();
 
-        MultiLayerNetwork model = new MultiLayerNetwork(conf);
-        model.init();
-        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        OutputLayer l = LayerFactories.getFactory(conf.getLayer()).create(conf, Arrays.<IterationListener>asList(new ScoreIterationListener(1)),0);
+
+        DataSet next = iter.next();
+        next.shuffle();
+        SplitTestAndTrain trainTest = next.splitTestAndTrain(110);
+        trainTest.getTrain().normalizeZeroMeanZeroUnitVariance();
+        l.fit(trainTest.getTrain());
+
+
+        DataSet test = trainTest.getTest();
+        test.normalizeZeroMeanZeroUnitVariance();
+        Evaluation eval = new Evaluation();
+        INDArray output = l.output(test.getFeatureMatrix());
+        eval.eval(test.getLabels(),output);
+        log.info("Score " +eval.stats());
+//        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+//                .layer(new AutoEncoder()) //labels null pointer exception
+//                .nIn(numInputs)
+//                .nOut(outputNum)
+//                .seed(seed)
+//                .iterations(iterations)
+//                .weightInit(WeightInit.DISTRIBUTION)
+//                .dist(new NormalDistribution(0, 1e-1))
+//                .activationFunction("relu")
+//                .learningRate(1e-3)
+//                .regularization(true)
+//                .l1(0.3)
+//                .l2(2e-4)
+//                .constrainGradientToUnitNorm(true)
+//                .list(1)
+//                .backward(false)
+//                .pretrain(true)
+//                .override(0, new ConfOverride() {
+//                    @Override
+//                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
+//                        builder.activationFunction("softmax");
+//                        builder.layer(new OutputLayer());
+//                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
+//                    }
+//                }).build();
+
+
 
         log.info("Train model....");
         while(iter.hasNext()) {
