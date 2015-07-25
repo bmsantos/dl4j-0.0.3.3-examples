@@ -22,6 +22,7 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.convolution.Convolution;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.SplitTestAndTrain;
 import org.nd4j.linalg.factory.Nd4j;
@@ -65,36 +66,29 @@ public class CNNIrisExample {
         SplitTestAndTrain trainTest = iris.splitTestAndTrain(splitTrainNum, new Random(seed));
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .nIn(numRows * numColumns)
-                .nOut(outputNum)
                 .seed(seed)
                 .iterations(iterations)
                 .weightInit(WeightInit.XAVIER)
-                .activationFunction("relu")
-                .filterSize(5, 1, numRows, numColumns)
                 .batchSize(batchSize)
                 .optimizationAlgo(OptimizationAlgorithm.LBFGS)
-                .constrainGradientToUnitNorm(true).l2(2e-4).regularization(true)
+                .constrainGradientToUnitNorm(true)
+                .l2(2e-4)
+                .regularization(true)
+                .useDropConnect(true)
                 .list(2)
+                .layer(0, new ConvolutionLayer.Builder(new int[]{2, 2}, Convolution.Type.VALID)
+                        .nIn(numRows * numColumns)
+                        .nOut(8)
+                        .activation("relu")
+                        .build())
+                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
+                        .nIn(8)
+                        .nOut(outputNum)
+                        .activation("softmax")
+                        .build())
                 .hiddenLayerSizes(4)
                 .inputPreProcessor(0, new ConvolutionInputPreProcessor(numRows, numColumns))
                 .preProcessor(0, new ConvolutionPostProcessor())
-                .useDropConnect(true)
-                .override(0, new ConfOverride() {
-                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
-                        builder.layer(new ConvolutionLayer());
-                        builder.convolutionType(ConvolutionLayer.ConvolutionType.MAX);
-                        builder.featureMapSize(2, 2);
-                    }
-                })
-                .override(1, new ConfOverride() {
-                    @Override
-                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
-                        builder.activationFunction("softmax");
-                        builder.layer(new OutputLayer());
-                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
-                    }
-                })
                 .build();
 
         log.info("Build model....");
