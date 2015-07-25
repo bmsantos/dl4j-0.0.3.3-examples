@@ -51,9 +51,10 @@ public class RBMCreateDataExample {
 
         log.info("Build model....");
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(trainingSet.numInputs())
-                .nOut(trainingSet.numOutcomes())
+                .layer(new RBM.Builder()
+                        .nIn(trainingSet.numInputs()) // # input nodes
+                        .nOut(trainingSet.numOutcomes()) // # output nodes
+                        .build()) // NN layer type
                 .seed(seed)
                 .weightInit(WeightInit.SIZE)
                 .constrainGradientToUnitNorm(true)

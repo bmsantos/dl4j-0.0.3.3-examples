@@ -72,12 +72,12 @@ public class DBNIrisExample {
         Nd4j.ENFORCE_NUMERICAL_STABILITY = true;
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM()) // NN layer type
-                .nIn(numRows * numColumns) // # input nodes
-                .nOut(outputNum) // # output nodes
+                .layer(new RBM.Builder(RBM.HiddenUnit.RECTIFIED, RBM.VisibleUnit.GAUSSIAN)
+                        .nIn(numRows * numColumns) // # input nodes
+                        .nOut(outputNum) // # output nodes
+                        .build()
+                ) // NN layer type
                 .seed(seed) // Seed to lock in weight initialization for tuning
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
                 .iterations(iterations) // # training iterations predict/classify & backprop
                 .weightInit(WeightInit.XAVIER) // Weight initialization method
                 .activationFunction("relu") // Activation function type
