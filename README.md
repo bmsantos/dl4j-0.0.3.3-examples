@@ -39,7 +39,7 @@ Note: We are aware most examples need to be fixed. Code base is going through so
 | DBNMnistSingleLayer | 0.35         | 0.18   | Fix          | full          | 0m0.08s  | - only 500 examples
 | DBNSmallMnist       | 0.54         | 0.29   | Fix          | full          | 0m0.09s  | - only 100 examples
 | GloveRawSentence    |              | NA     | Fix          | batch         | 0m0.73s  |
-| MLPBackpropIris     | 0.42         | 0.54   | Fix          | batch         | 0m0.12s  |
+| MLPBackpropIris     | 0.55         | 0.70   | Tune          | batch         | 0m0.12s  |
 | RBMCreateData	      |              | NA     | Fix          | full          | 0m0.09s  | - very small sample
 | RBMIris             |              | NA     | Fix          | full          | 0m6.12s  |
 | RecurrentLSTMMnist  |              | NA     | Fix          | batch         |          |

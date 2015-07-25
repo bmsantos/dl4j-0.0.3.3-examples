@@ -60,9 +60,10 @@ public class MLPBackpropIrisExample {
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(numInputs)
-                .nOut(outputNum)
+                .layer(new RBM.Builder()
+                        .nIn(numInputs)
+                        .nOut(outputNum)
+                        .build())
                 .seed(seed)
                 .iterations(iterations)
                 .weightInit(WeightInit.XAVIER)
