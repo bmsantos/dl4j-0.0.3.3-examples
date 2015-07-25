@@ -3,6 +3,7 @@ package org.deeplearning4j.deepbelief;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -59,23 +60,23 @@ public class DBNCreateDataExample {
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(trainingSet.numInputs())
-                .nOut(trainingSet.numOutcomes())
-                .weightInit(WeightInit.DISTRIBUTION)
-                .dist(new NormalDistribution(0,1))
                 .seed(seed)
+                .activationFunction("tanh")
+                .weightInit(WeightInit.DISTRIBUTION)
+                .dist(new NormalDistribution(0, 1))
                 .constrainGradientToUnitNorm(true)
                 .iterations(iterations)
-                .activationFunction("tanh")
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .learningRate(1e-2f)
                 .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .list(2)
-                .hiddenLayerSizes(400)
-                .override(1, new ClassifierOverride())
+                .layer(0, new RBM.Builder(RBM.HiddenUnit.RECTIFIED, RBM.VisibleUnit.GAUSSIAN)
+                        .nIn(trainingSet.numInputs())
+                        .nOut(400)
+                        .build())
+                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT)
+                        .nIn(400)
+                        .nOut(trainingSet.numOutcomes())
+                        .build())
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();

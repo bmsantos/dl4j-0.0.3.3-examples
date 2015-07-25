@@ -70,13 +70,9 @@ public class DBNIrisExample {
         DataSet train = testAndTrain.getTrain();
         DataSet test = testAndTrain.getTest();
         Nd4j.ENFORCE_NUMERICAL_STABILITY = true;
+
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM.Builder(RBM.HiddenUnit.RECTIFIED, RBM.VisibleUnit.GAUSSIAN)
-                        .nIn(numRows * numColumns) // # input nodes
-                        .nOut(outputNum) // # output nodes
-                        .build()
-                ) // NN layer type
                 .seed(seed) // Seed to lock in weight initialization for tuning
                 .iterations(iterations) // # training iterations predict/classify & backprop
                 .weightInit(WeightInit.XAVIER) // Weight initialization method
@@ -91,15 +87,17 @@ public class DBNIrisExample {
                 .dropOut(0.5)
                 .useDropConnect(true)
                 .list(2) // # NN layers (does not count input layer)
-                .hiddenLayerSizes(3) // # fully connected hidden layer nodes. Add list if multiple layers.
-                .override(1, new ConfOverride() {
-                    @Override
-                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
-                        builder.activationFunction("softmax");
-                        builder.layer(new OutputLayer());
-                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
-                    }
-                })
+                .layer(0, new RBM.Builder(RBM.HiddenUnit.RECTIFIED, RBM.VisibleUnit.GAUSSIAN)
+                                .nIn(numRows * numColumns) // # input nodes
+                                .nOut(3) // # fully connected hidden layer nodes. Add list if multiple layers.
+                                .build()
+                ) // NN layer type
+                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
+                                .nIn(3) // # input nodes
+                                .nOut(outputNum) // # output nodes
+                                .activation("softmax")
+                                .build()
+                ) // NN layer type
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
