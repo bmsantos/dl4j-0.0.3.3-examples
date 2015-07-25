@@ -25,23 +25,25 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 
 ## Performance
 
+Note: We are aware most examples need to be fixed. Code base is going through some adaptations and this should settle soon
+
 | **Model Name**      | **Accuracy** | **F1** | **Status**   | **Training**  |**Timing**|
 |---------------------|--------------|--------|--------------|---------------|----------|
-| CNNIris             | 0.60         | 0.71   | Tune         | full          |          | 
-| CNNMnist            | 0.41         | 0.26   | Tune         | full          |          | 
+| CNNIris             | 0.60         | 0.71   | Fix          | full          |          | 
+| CNNMnist            | 0.41         | 0.26   | Fix          | full          |          | 
 | CNNMnist2           | 0.20         | 0.09   | Fix          | batch         |          | 
 | DBNCreateData       | 0.50         | 0.66   | Fix          | batch         |          | 
-| DBNFullMnist        | 0.39         | 0.20   | Tune         | batch         | 63m7.25s | - only predicts 1
-| DBNIris             | 0.83         | 0.88   | Tune         | full          | 0m3.78s  | - with listeners on
-| DBNLFW              |              |        | Check        | batch         |          |
-| DBNMnistSingleLayer | 0.35         | 0.18   | Tune         | full          | 0m0.08s  | - only 500 examples
-| DBNSmallMnist       | 0.54         | 0.29   | Tune         | full          | 0m0.09s  | - only 100 examples
-| GloveRawSentence    |              | NA     |              | batch         | 0m0.73s  |
-| MLPBackpropIris     | 0.42         | 0.54   | Tune         | batch         | 0m0.12s  |
-| RBMCreateData	      |              | NA     | Tune         | full          | 0m0.09s  | - very small sample
-| RBMIris             |              | NA     | Tune         | full          | 0m6.12s  |
+| DBNFullMnist        | 0.39         | 0.20   | Fix          | batch         | 63m7.25s | - only predicts 1
+| DBNIris             | 0.83         | 0.88   | Fix          | full          | 0m3.78s  | - with listeners on
+| DBNLFW              |              |        | Fix          | batch         |          |
+| DBNMnistSingleLayer | 0.35         | 0.18   | Fix          | full          | 0m0.08s  | - only 500 examples
+| DBNSmallMnist       | 0.54         | 0.29   | Fix          | full          | 0m0.09s  | - only 100 examples
+| GloveRawSentence    |              | NA     | Fix          | batch         | 0m0.73s  |
+| MLPBackpropIris     | 0.42         | 0.54   | Fix          | batch         | 0m0.12s  |
+| RBMCreateData	      |              | NA     | Fix          | full          | 0m0.09s  | - very small sample
+| RBMIris             |              | NA     | Fix          | full          | 0m6.12s  |
 | RecurrentLSTMMnist  |              | NA     | Fix          | batch         |          |
-| RecursiveAutoEncoder|              | NA     | Validate     | batch         |          |
+| RecursiveAutoEncoder|              | NA     | Fix          | batch         |          |
 | RNTNTweets          |              | 0.33   | Fix          | batch         |          |
 | RNTNTweets2         |              | 0.33   | Fix          | batch         |          |
 | TSNEBarnesHut       |              | NA     | Fix          | NA            |          |
