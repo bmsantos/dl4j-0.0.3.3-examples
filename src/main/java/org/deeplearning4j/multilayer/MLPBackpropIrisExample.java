@@ -71,7 +71,7 @@ public class MLPBackpropIrisExample {
                 .l1(0.3).regularization(true).l2(1e-3)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
-                .backward(true)
+                .backprop(true)
                 .pretrain(false)
                 .hiddenLayerSizes(new int[]{3, 2})
                 .override(2, new ConfOverride() {
