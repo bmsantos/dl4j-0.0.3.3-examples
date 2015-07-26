@@ -45,9 +45,10 @@ public class RecursiveAutoEncoderMnistExample {
 
         log.info("Building model...");
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RecursiveAutoEncoder())
-                .nIn(numRows * numColumns)
-                .nOut(outputNum)
+                .layer(new RecursiveAutoEncoder.Builder()
+                        .nIn(numRows * numColumns)
+                        .nOut(outputNum)
+                        .build())
                 .seed(seed)
                 .momentum(0.9f)
                 .corruptionLevel(0.3)

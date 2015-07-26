@@ -23,6 +23,7 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 
@@ -76,7 +77,7 @@ public class DBNMnistSingleLayerExample {
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Train model....");
         while(iter.hasNext()) {

@@ -70,14 +70,10 @@ public class DBNIrisExample {
         DataSet train = testAndTrain.getTrain();
         DataSet test = testAndTrain.getTest();
         Nd4j.ENFORCE_NUMERICAL_STABILITY = true;
+
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM()) // NN layer type
-                .nIn(numRows * numColumns) // # input nodes
-                .nOut(outputNum) // # output nodes
                 .seed(seed) // Seed to lock in weight initialization for tuning
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
                 .iterations(iterations) // # training iterations predict/classify & backprop
                 .weightInit(WeightInit.XAVIER) // Weight initialization method
                 .activationFunction("relu") // Activation function type
@@ -91,15 +87,17 @@ public class DBNIrisExample {
                 .dropOut(0.5)
                 .useDropConnect(true)
                 .list(2) // # NN layers (does not count input layer)
-                .hiddenLayerSizes(3) // # fully connected hidden layer nodes. Add list if multiple layers.
-                .override(1, new ConfOverride() {
-                    @Override
-                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
-                        builder.activationFunction("softmax");
-                        builder.layer(new OutputLayer());
-                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
-                    }
-                })
+                .layer(0, new RBM.Builder(RBM.HiddenUnit.RECTIFIED, RBM.VisibleUnit.GAUSSIAN)
+                                .nIn(numRows * numColumns) // # input nodes
+                                .nOut(3) // # fully connected hidden layer nodes. Add list if multiple layers.
+                                .build()
+                ) // NN layer type
+                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
+                                .nIn(3) // # input nodes
+                                .nOut(outputNum) // # output nodes
+                                .activation("softmax")
+                                .build()
+                ) // NN layer type
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
@@ -108,7 +106,7 @@ public class DBNIrisExample {
 //                new LossPlotterIterationListener(listenerFreq)));
 
 
-        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
         log.info("Train model....");
         model.fit(train);
 

@@ -60,9 +60,10 @@ public class MLPBackpropIrisExample {
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(numInputs)
-                .nOut(outputNum)
+                .layer(new RBM.Builder()
+                        .nIn(numInputs)
+                        .nOut(outputNum)
+                        .build())
                 .seed(seed)
                 .iterations(iterations)
                 .weightInit(WeightInit.XAVIER)
@@ -71,7 +72,7 @@ public class MLPBackpropIrisExample {
                 .l1(0.3).regularization(true).l2(1e-3)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
-                .backward(true)
+                .backprop(true)
                 .pretrain(false)
                 .hiddenLayerSizes(new int[]{3, 2})
                 .override(2, new ConfOverride() {
@@ -85,7 +86,7 @@ public class MLPBackpropIrisExample {
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Train model....");
         while(iter.hasNext()) {

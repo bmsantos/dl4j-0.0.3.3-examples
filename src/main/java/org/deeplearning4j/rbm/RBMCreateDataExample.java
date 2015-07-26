@@ -51,9 +51,10 @@ public class RBMCreateDataExample {
 
         log.info("Build model....");
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(trainingSet.numInputs())
-                .nOut(trainingSet.numOutcomes())
+                .layer(new RBM.Builder()
+                        .nIn(trainingSet.numInputs()) // # input nodes
+                        .nOut(trainingSet.numOutcomes()) // # output nodes
+                        .build()) // NN layer type
                 .seed(seed)
                 .weightInit(WeightInit.SIZE)
                 .constrainGradientToUnitNorm(true)
@@ -66,7 +67,7 @@ public class RBMCreateDataExample {
                 .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .build();
         Layer model = LayerFactories.getFactory(conf).create(conf);
-        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Evaluate weights....");
         INDArray w = model.getParam(DefaultParamInitializer.WEIGHT_KEY);

@@ -79,7 +79,7 @@ public class RNTNTweetsExample2 {
                 .setRandomFeatureVectors(false)
                 .setUseTensors(false)
                 .build();
-        rntn.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        rntn.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
         return rntn;
     }
 
@@ -133,7 +133,7 @@ public class RNTNTweetsExample2 {
         RNTN model = buildModel(featureVec);
 
         log.info("Train model....");
-        Collections.singletonList((IterationListener) new ScoreIterationListener(1));
+        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(1)));
         model = trainModel(model);
 
         log.info("Evaluate model....");

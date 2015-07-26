@@ -79,7 +79,7 @@ public class RNTNTweetsExample {
                 .setRandomFeatureVectors(false)
                 .setUseTensors(false)
                 .build();
-        rntn.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        rntn.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         count = 0;
         log.info("Train model....");

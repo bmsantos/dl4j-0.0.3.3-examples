@@ -63,9 +63,10 @@ public class RBMIrisExample {
 
         log.info("Build model....");
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM()) // NN layer type
-                .nIn(numRows * numColumns) // # input nodes
-                .nOut(outputNum) // # output nodes
+                .layer(new RBM.Builder()
+                        .nIn(numRows * numColumns) // # input nodes
+                        .nOut(outputNum) // # output nodes
+                        .build()) // NN layer type
                 .seed(seed) // Seed to lock in weight initialization for tuning
                 .visibleUnit(RBM.VisibleUnit.GAUSSIAN) // Gaussian transformation visible layer
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rectified Linear transformation visible layer

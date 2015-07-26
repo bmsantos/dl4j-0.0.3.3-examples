@@ -24,6 +24,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.convolution.Convolution;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
@@ -79,42 +80,31 @@ public class CNNMnistExample2 {
     static MultiLayerNetwork buildModel(final int featureMapSize){
         // Uniform and Zero have good results
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .nIn(numRows * numColumns)
-                .nOut(outputNum)
                 .seed(123)
                 .batchSize(batchSize)
                 .iterations(iterations)
                 .weightInit(WeightInit.SIZE)
                 .activationFunction("relu")
-                .filterSize(8, 1, numRows, numColumns)
                 .learningRate(learningRate)
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
+                .layer(0, new ConvolutionLayer.Builder(new int[]{9, 9}, Convolution.Type.VALID)
+                        .nIn(numRows * numColumns)
+                        .nOut(8)
+                        .build())
+                .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX, new int[] {2,2})
+                        .build())
+                .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                        .nIn(8)
+                        .nOut(outputNum)
+                        .activation("softmax")
+                        .build())
                 .hiddenLayerSizes(hLayerSize)
                 .inputPreProcessor(0, new ConvolutionInputPreProcessor(numRows, numColumns))
                 .preProcessor(1, new ConvolutionPostProcessor())
-                .override(0, new ConfOverride() {
-                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
-                        builder.layer(new ConvolutionLayer());
-                        builder.convolutionType(ConvolutionLayer.ConvolutionType.MAX);
-                        builder.featureMapSize(featureMapSize, featureMapSize);
-                    }
-                })
-                .override(1, new ConfOverride() {
-                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
-                        builder.layer(new SubsamplingLayer());
-                    }
-                })
-                .override(2, new ClassifierOverride() {
-                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
-                        builder.layer(new OutputLayer());
-                        builder.activationFunction("softmax");
-                        builder.optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT);
-                        builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
-                    }
-                })
                 .build();
+
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
         model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
