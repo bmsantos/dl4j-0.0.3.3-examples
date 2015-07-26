@@ -1,3 +1,4 @@
+
 DL4J Examples 
 =========================
 *based on version 0.0.3.3.\**
@@ -24,30 +25,29 @@ For more information, check out [deeplearning4j.org](http://deeplearning4j.org/)
 
 ## Performance
 
-| **Model Name**      | **Accuracy** | **F1** | **Status**   | **Training**  |
-|---------------------|--------------|--------|--------------|---------------|
-| CNNIris             | 0.48         | 0.19   | Tune         | full          | - only predicts 0
-| CNNMnist            | 0.34         | 0.032  | Fix          | full          | - only predicts 0 & NaN weight
-| CNNMnist2           | 0.05         | 0.009  | Fix          | batch         | - only predicts 0 & NaN weight
-| DBNCreateData       | 0.50         | 0.33   | Fix          | batch         | - predicts NAN
-| DBNFullMnist        | 0.357        | 0.018  | Tune         | full          | 
-| DBNIris             | 0.975        | 0.971  | Tune         | full          | 
-| DBNLWF              | 5.0E-3       | 3.8E-4 | Tune         | batch         | 
-| DBNMnistReconstruct | 0.335        | 0.10   | Tune         | batch         | 
-| DBNSmallMnist       | 0.425        | 0.023  | Fix          | full          | 
-| GloveRawSentence    | Sim 0.13     | NA     | Tune         | batch         |
-| MLPBackpropIris     | 0.609        | 0.513  | Tune         | batch         | 
-| RBMCreateData	      |              | NA     | Fix          | full          |
-| RBMIris             |              | NA     | Tune         | full          |
-| RecurrentLSTMMnist  |              | NA     | Validate     | batch         |
-| RecursiveAutoEncoder|              | NA     | Validate     | batch         |
-| RNTNTweets          |              | 0.33   | Fix          | batch         | 
-| RNTNTweets2         |              | 0.33   | Fix          | batch         | 
-| TSNEBarnesHut       |              | NA     | Fix          | NA            |
-| TSNEStandard        |              | NA     | Fix          | NA            |
-| Word2VecRawText     | Sim 0.24     | NA     | Fix          | batch         |
+| **Model Name**      | **Accuracy** | **F1** | **Status**   | **Training**  |**Timing**|
+|---------------------|--------------|--------|--------------|---------------|----------|
+| CNNIris             | 0.60         | 0.71   | Tune         | full          |          | 
+| CNNMnist            | 0.41         | 0.26   | Tune         | full          |          | 
+| CNNMnist2           | 0.20         | 0.09   | Fix          | batch         |          | 
+| DBNCreateData       | 0.50         | 0.66   | Fix          | batch         |          | 
+| DBNFullMnist        | 0.39         | 0.20   | Tune         | batch         | 63m7.25s | - only predicts 1
+| DBNIris             | 0.83         | 0.88   | Tune         | full          | 0m3.78s  | - with listeners on
+| DBNLFW              |              |        | Check        | batch         |          |
+| DBNMnistSingleLayer | 0.35         | 0.18   | Tune         | full          | 0m0.08s  | - only 500 examples
+| DBNSmallMnist       | 0.54         | 0.29   | Tune         | full          | 0m0.09s  | - only 100 examples
+| GloveRawSentence    |              | NA     |              | batch         | 0m0.73s  |
+| MLPBackpropIris     | 0.42         | 0.54   | Tune         | batch         | 0m0.12s  |
+| RBMCreateData	      |              | NA     | Tune         | full          | 0m0.09s  | - very small sample
+| RBMIris             |              | NA     | Tune         | full          | 0m6.12s  |
+| RecurrentLSTMMnist  |              | NA     | Fix          | batch         |          |
+| RecursiveAutoEncoder|              | NA     | Validate     | batch         |          |
+| RNTNTweets          |              | 0.33   | Fix          | batch         |          |
+| RNTNTweets2         |              | 0.33   | Fix          | batch         |          |
+| TSNEBarnesHut       |              | NA     | Fix          | NA            |          |
+| TSNEStandard        |              | NA     | Fix          | NA            |          |
+| Word2VecRawText     |              | NA     | Fix          | batch         | 0m1.36s  |
     
 
-* Sim is simularity
-** Some networks need adjustments for seed to work (e.g. RNTN)
-*** Note, current error in accuracy is causing it to be higher than expected 
+* using bash real for timing and running on single CPU with 2.3GHz processor
+* Some networks need adjustments for seed to work (e.g. RNTN)

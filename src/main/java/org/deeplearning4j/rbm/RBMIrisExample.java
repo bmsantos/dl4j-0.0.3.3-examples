@@ -1,6 +1,7 @@
 package org.deeplearning4j.rbm;
 
 
+import com.hazelcast.config.NetworkConfig;
 import org.deeplearning4j.datasets.iterator.DataSetIterator;
 import org.deeplearning4j.datasets.iterator.impl.IrisDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
@@ -72,7 +73,7 @@ public class RBMIrisExample {
                 .dist(new UniformDistribution(0, 1))  // Weight distribution curve mean and stdev
                 .activationFunction("tanh") // Activation function type
                 .k(1) // # contrastive divergence iterations
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT) // Loss function type
+                .lossFunction(LossFunctions.LossFunction.SQUARED_LOSS) // Loss function type
                 .learningRate(1e-1f) // Backprop step size
                 .momentum(0.9) // Speed of modifying learning rate
                 .regularization(true) // Prevent overfitting
@@ -81,7 +82,7 @@ public class RBMIrisExample {
                 .constrainGradientToUnitNorm(true)
                 .build();
         Layer model = LayerFactories.getFactory(conf.getLayer()).create(conf);
-        model.setIterationListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Evaluate weights....");
         INDArray w = model.getParam(DefaultParamInitializer.WEIGHT_KEY);

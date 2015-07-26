@@ -29,7 +29,8 @@ public class RBMCreateDataExample {
         int seed = 123;
         int listenerFreq = iterations/5;
         Nd4j.getRandom().setSeed(seed);
-
+        Nd4j.MAX_ELEMENTS_PER_SLICE = Integer.MAX_VALUE;
+        Nd4j.MAX_SLICES_TO_PRINT = Integer.MAX_VALUE;
         log.info("Load dat....");
         INDArray input = Nd4j.create(2, numFeatures); // have to be at least two or else output layer gradient is a scalar and cause exception
         INDArray labels = Nd4j.create(2, 2);
@@ -62,10 +63,10 @@ public class RBMCreateDataExample {
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .learningRate(1e-1f)
-                .optimizationAlgo(OptimizationAlgorithm.ITERATION_GRADIENT_DESCENT)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .build();
         Layer model = LayerFactories.getFactory(conf).create(conf);
-        model.setIterationListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
+        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Evaluate weights....");
         INDArray w = model.getParam(DefaultParamInitializer.WEIGHT_KEY);
@@ -74,10 +75,7 @@ public class RBMCreateDataExample {
         log.info("Train model....");
         model.fit(trainingSet.getFeatureMatrix());
 
-        log.info("Visualize training results....");
-        // Work in progress to get NeuralNetPlotter functioning
-        NeuralNetPlotter plotter = new NeuralNetPlotter();
-        plotter.plotNetworkGradient(model, model.gradient());
+
     }
 
     // A single layer just learns features and is not supervised learning.

@@ -8,6 +8,7 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
@@ -43,9 +44,9 @@ public class DBNSmallMnistExample {
         final int numRows = 28;
         final int numColumns = 28;
         int outputNum = 10;
-        int numSamples = 1000;
+        int numSamples = 100;
         int batchSize = 100;
-        int iterations = 5;
+        int iterations = 50;
         int seed = 123;
         int listenerFreq = 10;
 
@@ -59,22 +60,20 @@ public class DBNSmallMnistExample {
                 .nIn(numRows * numColumns)
                 .nOut(outputNum)
                 .seed(seed)
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
-                .constrainGradientToUnitNorm(true)
-                .weightInit(WeightInit.SIZE)
-                .iterations(iterations)
-                .learningRate(1e-3f)
-                .list(2)
+                .weightInit(WeightInit.XAVIER).lossFunction(LossFunctions.LossFunction.SQUARED_LOSS)
+                .activationFunction("sigmoid")
+                .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT)
+                .iterations(iterations).l1(1e-1).l2(1e-3).constrainGradientToUnitNorm(true)
+                .regularization(true)
+                .learningRate(1e-1f)
+                .list(3)
                 .hiddenLayerSizes(600, 400, 200)
-                .backward(true)
-                .override(3, new ClassifierOverride() {
+                .override(2, new ClassifierOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.activationFunction("softmax");
                         builder.layer(new OutputLayer());
-                        builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
-                        builder.optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT);
+                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
                     }
                 })
                 .build();

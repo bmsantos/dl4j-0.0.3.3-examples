@@ -17,6 +17,8 @@ import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.plot.iterationlistener.NeuralNetPlotterIterationListener;
+import org.deeplearning4j.plot.iterationlistener.PlotFiltersIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.SplitTestAndTrain;
@@ -53,9 +55,9 @@ public class CNNMnistExample {
         DataSet trainInput;
         List<INDArray> testInput = new ArrayList<>();
         List<INDArray> testLabels = new ArrayList<>();
-
+        Nd4j.ENFORCE_NUMERICAL_STABILITY = true;
         log.info("Load data....");
-        DataSetIterator mnistIter = new MnistDataSetIterator(batchSize,numSamples);
+        DataSetIterator mnistIter = new MnistDataSetIterator(batchSize,numSamples, true);
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
@@ -64,11 +66,10 @@ public class CNNMnistExample {
                 .seed(seed)
                 .batchSize(batchSize)
                 .iterations(iterations)
-                .weightInit(WeightInit.SIZE)
-                .activationFunction("tanh")
+                .weightInit(WeightInit.XAVIER)
+                .activationFunction("sigmoid")
                 .filterSize(8, 1, numRows, numColumns)
-                .optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT)
-                .constrainGradientToUnitNorm(true)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .list(3)
                 .hiddenLayerSizes(50)
                 .inputPreProcessor(0, new ConvolutionInputPreProcessor(numRows, numColumns))
@@ -87,7 +88,6 @@ public class CNNMnistExample {
                         public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                             builder.layer(new OutputLayer());
                             builder.activationFunction("softmax");
-                            builder.optimizationAlgo(OptimizationAlgorithm.GRADIENT_DESCENT);
                             builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
                         }
 
@@ -97,8 +97,7 @@ public class CNNMnistExample {
         model.init();
 
         log.info("Train model....");
-        model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
-//        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(1)));
+        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
         while(mnistIter.hasNext()) {
             mnist = mnistIter.next();
             mnist.normalizeZeroMeanZeroUnitVariance();
