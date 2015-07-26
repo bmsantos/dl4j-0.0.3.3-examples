@@ -7,9 +7,11 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
 import org.deeplearning4j.nn.conf.layers.AutoEncoder;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
@@ -53,8 +55,7 @@ public class MLPBackpropIrisExample {
         int batchSize = 150;
         int iterations = 100;
         long seed = 6;
-        int listenerFreq = iterations/5;
-
+        int listenerFreq = 1;
         log.info("Load data....");
         DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
 
@@ -62,24 +63,22 @@ public class MLPBackpropIrisExample {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .layer(new RBM())
                 .nIn(numInputs)
-                .nOut(outputNum)
-                .seed(seed)
-                .iterations(iterations)
-                .weightInit(WeightInit.XAVIER)
-                .activationFunction("tanh")
-                .learningRate(1e-3)
-                .l1(0.3).regularization(true).l2(1e-3)
-                .constrainGradientToUnitNorm(true)
+                .nOut(outputNum).seed(123)
+                .seed(seed).regularization(true).l2(1e-1).l1(1e-3)
+                .iterations(iterations).dropOut(0.0).constrainGradientToUnitNorm(true)
+                .weightInit(WeightInit.XAVIER).corruptionLevel(0.6)
+                .activationFunction("relu").updater(Updater.ADAM)
+                .learningRate(1e-6)
                 .list(3)
                 .backward(true)
                 .pretrain(false)
-                .hiddenLayerSizes(new int[]{3, 2})
-                .override(2, new ConfOverride() {
+                .hiddenLayerSizes(3,2,2)
+                .override(3, new ConfOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
                         builder.activationFunction("softmax");
                         builder.layer(new OutputLayer());
-                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
+                        builder.lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD);
                     }
                 }).build();
 
@@ -88,11 +87,11 @@ public class MLPBackpropIrisExample {
         model.setListeners(Collections.singletonList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Train model....");
-        while(iter.hasNext()) {
-            DataSet iris = iter.next();
-            iris.normalizeZeroMeanZeroUnitVariance();
-            model.fit(iris);
-        }
+        DataSet iris = iter.next();
+
+        iris.normalizeZeroMeanZeroUnitVariance();
+        SplitTestAndTrain testAndTrain = iris.splitTestAndTrain(0.8);
+        model.fit(testAndTrain.getTrain());
         iter.reset();
 
         log.info("Evaluate weights....");
@@ -104,11 +103,8 @@ public class MLPBackpropIrisExample {
 
         log.info("Evaluate model....");
         Evaluation eval = new Evaluation();
-        DataSetIterator iterTest = new IrisDataSetIterator(numSamples, numSamples);
-        DataSet test = iterTest.next();
-        test.normalizeZeroMeanZeroUnitVariance();
-        INDArray output = model.output(test.getFeatureMatrix());
-        eval.eval(test.getLabels(), output);
+        INDArray output = model.output(testAndTrain.getTest().getFeatureMatrix(),true);
+        eval.eval(testAndTrain.getTest().getLabels(), output);
         log.info(eval.stats());
         log.info("****************Example finished********************");
 

@@ -51,7 +51,7 @@ public class DBNFullMnistExample {
                 .nIn(numRows * numColumns)
                 .nOut(outputNum)
                 .weightInit(WeightInit.XAVIER)
-                .seed(seed)
+                .seed(seed).l1(0.1).l2(1e-3).regularization(true)
                 .constrainGradientToUnitNorm(true)
                 .iterations(iterations)
                 .lossFunction(LossFunctions.LossFunction.RMSE_XENT)

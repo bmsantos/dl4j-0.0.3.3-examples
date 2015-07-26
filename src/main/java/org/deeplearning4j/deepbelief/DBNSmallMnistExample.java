@@ -10,6 +10,8 @@ import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
+import org.deeplearning4j.nn.conf.layers.AutoEncoder;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.override.ClassifierOverride;
@@ -44,30 +46,29 @@ public class DBNSmallMnistExample {
         final int numRows = 28;
         final int numColumns = 28;
         int outputNum = 10;
-        int numSamples = 100;
-        int batchSize = 100;
-        int iterations = 50;
+        int numSamples = 60000;
+        int batchSize = 1000;
+        int iterations = 1;
         int seed = 123;
-        int listenerFreq = 10;
+        int listenerFreq = 1;
 
         log.info("Load data....");
-//        DataSetIterator iter = new MultipleEpochsIterator(5, new MnistDataSetIterator(batchSize,numSamples));
-        DataSetIterator iter = new MnistDataSetIterator(batchSize,numSamples);
+       DataSetIterator iter = new MultipleEpochsIterator(5, new MnistDataSetIterator(batchSize,numSamples,true));
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
+                .layer(new DenseLayer())
                 .nIn(numRows * numColumns)
                 .nOut(outputNum)
                 .seed(seed)
-                .weightInit(WeightInit.XAVIER).lossFunction(LossFunctions.LossFunction.SQUARED_LOSS)
-                .activationFunction("sigmoid")
-                .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT)
-                .iterations(iterations).l1(1e-1).l2(1e-3).constrainGradientToUnitNorm(true)
+                .weightInit(WeightInit.XAVIER).lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                .activationFunction("relu").l1(0.1).l2(1e-3).regularization(true)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT).updater(Updater.ADAGRAD)
+                .iterations(iterations).l1(0.1).l2(1e-1).dropOut(0.5)
                 .regularization(true)
-                .learningRate(1e-1f)
-                .list(3)
-                .hiddenLayerSizes(600, 400, 200)
+                .learningRate(1e-1)
+                .list(3).pretrain(false)
+                .hiddenLayerSizes(600, 400, 200).backward(true)
                 .override(2, new ClassifierOverride() {
                     @Override
                     public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
