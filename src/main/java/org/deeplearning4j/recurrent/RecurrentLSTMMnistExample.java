@@ -45,13 +45,14 @@ public class RecurrentLSTMMnistExample {
 
         log.info("Building model...");
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new LSTM())
-                .nIn(numRows * numColumns)
-                .nOut(numRows * numColumns)
-                .activationFunction("sigmoid")
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
+                .layer(new LSTM.Builder()
+                        .nIn(numRows * numColumns)
+                        .nOut(numRows * numColumns)
+                        .build())
+                .activationFunction("tahn")
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .constrainGradientToUnitNorm(true)
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                .lossFunction(LossFunctions.LossFunction.RECONSTRUCTION_CROSSENTROPY)
                 .build();
         Layer model = LayerFactories.getFactory(conf.getLayer()).create(conf);
         model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
