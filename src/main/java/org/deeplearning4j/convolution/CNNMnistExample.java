@@ -57,6 +57,7 @@ public class CNNMnistExample {
         List<INDArray> testInput = new ArrayList<>();
         List<INDArray> testLabels = new ArrayList<>();
         Nd4j.ENFORCE_NUMERICAL_STABILITY = true;
+
         log.info("Load data....");
         DataSetIterator mnistIter = new MnistDataSetIterator(batchSize,numSamples, true);
 
@@ -73,7 +74,7 @@ public class CNNMnistExample {
                         .nIn(numRows * numColumns)
                         .nOut(8)
                         .build())
-                .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX, new int[] {2,2})
+                .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.poolingType.MAX, new int[] {2,2})
                         .build())
                 .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .nIn(8)
