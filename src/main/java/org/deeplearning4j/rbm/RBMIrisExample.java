@@ -1,19 +1,15 @@
 package org.deeplearning4j.rbm;
 
 
-import com.hazelcast.config.NetworkConfig;
 import org.deeplearning4j.datasets.iterator.DataSetIterator;
 import org.deeplearning4j.datasets.iterator.impl.IrisDataSetIterator;
-import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
 import org.deeplearning4j.nn.conf.layers.RBM;
-import org.deeplearning4j.nn.conf.override.ClassifierOverride;
+import org.deeplearning4j.nn.conf.layers.RBM.*;
 import org.deeplearning4j.nn.layers.factory.LayerFactories;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
@@ -21,7 +17,6 @@ import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.plot.NeuralNetPlotter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.dataset.SplitTestAndTrain;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
@@ -32,9 +27,7 @@ import java.util.Arrays;
 
 
 /**
- * Created by agibsonccc on 9/12/14.
- *
- * ? Output layer not a instance of output layer returning ?
+ * @author Yoda the Jedi master
  *
  */
 public class RBMIrisExample {
@@ -63,17 +56,19 @@ public class RBMIrisExample {
 
         log.info("Build model....");
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM.Builder()
-                        .nIn(numRows * numColumns) // # input nodes
-                        .nOut(outputNum) // # output nodes
-                        .build()) // NN layer type
+                // Gaussian for the visible layer and Rectify for the hidden layer
+                // Set contrastive divergence to 1
+                .layer(new RBM.Builder(HiddenUnit.RECTIFIED, VisibleUnit.GAUSSIAN, 1)
+                        // Input nodes
+                        .nIn(numRows * numColumns)
+                        // Output nodes
+                        .nOut(outputNum)
+                        // Activation function type
+                        .activation("tanh")
+                        .build())
                 .seed(seed) // Seed to lock in weight initialization for tuning
-                .visibleUnit(RBM.VisibleUnit.GAUSSIAN) // Gaussian transformation visible layer
-                .hiddenUnit(RBM.HiddenUnit.RECTIFIED) // Rectified Linear transformation visible layer
                 .weightInit(WeightInit.DISTRIBUTION) // Weight initialization method
                 .dist(new UniformDistribution(0, 1))  // Weight distribution curve mean and stdev
-                .activationFunction("tanh") // Activation function type
-                .k(1) // # contrastive divergence iterations
                 .lossFunction(LossFunctions.LossFunction.SQUARED_LOSS) // Loss function type
                 .learningRate(1e-1f) // Backprop step size
                 .momentum(0.9) // Speed of modifying learning rate
