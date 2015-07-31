@@ -7,10 +7,8 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
-import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
@@ -18,13 +16,11 @@ import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 
 /**
@@ -51,29 +47,19 @@ public class DBNMnistSingleLayerExample {
         DataSetIterator iter = new MnistDataSetIterator(batchSize, numSamples);
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(numRows * numColumns)
-                .nOut(outputNum)
                 .seed(seed)
                 .weightInit(WeightInit.XAVIER)
                 .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
                 .optimizationAlgo(OptimizationAlgorithm.LBFGS)
-                .activationFunction("relu")
                 .constrainGradientToUnitNorm(true)
                 .maxNumLineSearchIterations(10)
                 .iterations(iterations)
-                .lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                 .learningRate(1e-3f)
                 .list(2)
-                .hiddenLayerSizes(new int[]{1000})
-                .override(1, new ClassifierOverride() {
-                    @Override
-                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
-                        builder.activationFunction("softmax");
-                        builder.layer(new OutputLayer());
-                    }
-                })
+                .layer(0, new RBM.Builder().nIn(numRows*numColumns).nOut(1000).activation("relu").build())
+                .layer(1, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD).activation("softmax")
+                	.nIn(1000).nOut(outputNum).build())
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();

@@ -2,17 +2,13 @@ package org.deeplearning4j.deepbelief;
 
 
 import org.deeplearning4j.datasets.iterator.DataSetIterator;
-import org.deeplearning4j.datasets.iterator.MultipleEpochsIterator;
 import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.Updater;
-import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
-import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
@@ -21,12 +17,11 @@ import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 
 /**
@@ -51,32 +46,25 @@ public class DBNSmallMnistExample {
         int listenerFreq = 10;
 
         log.info("Load data....");
-//        DataSetIterator iter = new MultipleEpochsIterator(5, new MnistDataSetIterator(batchSize,numSamples));
-        DataSetIterator iter = new MnistDataSetIterator(batchSize,numSamples);
+        DataSetIterator iter = new MnistDataSetIterator(batchSize,numSamples,true);
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(numRows * numColumns)
-                .nOut(outputNum)
-                .seed(seed)
-                .weightInit(WeightInit.XAVIER).lossFunction(LossFunctions.LossFunction.SQUARED_LOSS)
-                .activationFunction("sigmoid")
-                .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT)
-                .iterations(iterations).l1(1e-1).l2(1e-3).constrainGradientToUnitNorm(true)
-                .regularization(true)
-                .learningRate(1e-1f)
-                .list(3)
-                .hiddenLayerSizes(600, 400, 200)
-                .override(2, new ClassifierOverride() {
-                    @Override
-                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
-                        builder.activationFunction("softmax");
-                        builder.layer(new OutputLayer());
-                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
-                    }
-                })
-                .build();
+	        .seed(seed)
+	        .weightInit(WeightInit.XAVIER)
+	        .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT)
+	        .iterations(iterations).l1(1e-1).l2(1e-3).constrainGradientToUnitNorm(true)
+	        .regularization(true)
+	        .visibleUnit(RBM.VisibleUnit.BINARY)
+	        .hiddenUnit(RBM.HiddenUnit.BINARY)
+	        .list(4)
+	        .layer(0, new RBM.Builder().nIn(numRows*numColumns).nOut(600).build())
+	        .layer(1, new RBM.Builder().nIn(600).nOut(400).build())
+	        .layer(2, new RBM.Builder().nIn(400).nOut(200).build())
+	        .layer(3, new OutputLayer.Builder(LossFunction.MCXENT).activation("softmax")
+	        		.nIn(200).nOut(outputNum).build())
+	    	.pretrain(true).backward(false)
+	        .build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
