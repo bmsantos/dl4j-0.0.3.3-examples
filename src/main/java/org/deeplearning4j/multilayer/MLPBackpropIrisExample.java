@@ -4,16 +4,10 @@ package org.deeplearning4j.multilayer;
 import org.deeplearning4j.datasets.iterator.DataSetIterator;
 import org.deeplearning4j.datasets.iterator.impl.IrisDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
-import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
-import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
-import org.deeplearning4j.nn.conf.layers.AutoEncoder;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
-import org.deeplearning4j.nn.conf.layers.RBM;
-import org.deeplearning4j.nn.conf.override.ClassifierOverride;
-import org.deeplearning4j.nn.conf.override.ConfOverride;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
@@ -21,22 +15,17 @@ import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.dataset.SplitTestAndTrain;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 
 
 /**
  * Created by agibsonccc on 9/12/14.
- *
- * ? Output layer not a instance of output layer returning ?
- *
  */
 public class MLPBackpropIrisExample {
 
@@ -60,10 +49,6 @@ public class MLPBackpropIrisExample {
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM.Builder()
-                        .nIn(numInputs)
-                        .nOut(outputNum)
-                        .build())
                 .seed(seed)
                 .iterations(iterations)
                 .weightInit(WeightInit.XAVIER)
@@ -72,17 +57,12 @@ public class MLPBackpropIrisExample {
                 .l1(0.3).regularization(true).l2(1e-3)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
-                .backward(true)
-                .pretrain(false)
-                .hiddenLayerSizes(new int[]{3, 2})
-                .override(2, new ConfOverride() {
-                    @Override
-                    public void overrideLayer(int i, NeuralNetConfiguration.Builder builder) {
-                        builder.activationFunction("softmax");
-                        builder.layer(new OutputLayer());
-                        builder.lossFunction(LossFunctions.LossFunction.MCXENT);
-                    }
-                }).build();
+                .layer(0, new DenseLayer.Builder().nIn(numInputs).nOut(3).build())
+                .layer(1, new DenseLayer.Builder().nIn(3).nOut(2).build())
+                .layer(2, new OutputLayer.Builder(LossFunction.MCXENT).activation("softmax")
+                		.nIn(2).nOut(outputNum).build())
+                .backward(true).pretrain(false)
+                .build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
