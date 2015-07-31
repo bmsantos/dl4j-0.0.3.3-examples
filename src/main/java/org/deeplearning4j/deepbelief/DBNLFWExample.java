@@ -5,22 +5,22 @@ import org.deeplearning4j.datasets.fetchers.LFWDataFetcher;
 import org.deeplearning4j.datasets.iterator.DataSetIterator;
 import org.deeplearning4j.datasets.iterator.impl.LFWDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
+import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
-import org.deeplearning4j.nn.conf.override.ClassifierOverride;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 
 /**
@@ -45,19 +45,19 @@ public class DBNLFWExample {
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .layer(new RBM())
-                .nIn(dataIter.inputColumns())
-                .nOut(dataIter.totalOutcomes())
                 .hiddenUnit(RBM.HiddenUnit.RECTIFIED)
                 .visibleUnit(RBM.VisibleUnit.GAUSSIAN)
                 .seed(seed)
                 .weightInit(WeightInit.XAVIER)
-                .lossFunction(LossFunctions.LossFunction.RMSE_XENT)
                 .constrainGradientToUnitNorm(true)
-                .learningRate(1e-3)
+                .optimizationAlgo(OptimizationAlgorithm.CONJUGATE_GRADIENT)
                 .list(4)
-                .hiddenLayerSizes(600, 250, 200)
-                .override(3,new ClassifierOverride())
+                .layer(0, new RBM.Builder().nIn(dataIter.inputColumns()).nOut(600).build())
+                .layer(1, new RBM.Builder().nIn(600).nOut(250).build())
+                .layer(2, new RBM.Builder().nIn(250).nOut(200).build())
+                .layer(3, new OutputLayer.Builder(LossFunction.RMSE_XENT).activation("softmax")
+                	.nIn(200).nOut(dataIter.totalOutcomes()).build())
+            	.pretrain(true).backward(false)
                 .build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
