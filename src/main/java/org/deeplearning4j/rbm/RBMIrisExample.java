@@ -66,15 +66,15 @@ public class RBMIrisExample {
                 .build())
             .seed(seed) // Locks in weight initialization for tuning
             .weightInit(WeightInit.DISTRIBUTION) // Weight initialization
-            // Weight dist. curve mean and stdev
             .dist(new UniformDistribution(0, 1)) 
+            // ^^ Weight distribution curve mean and st. deviation
             .lossFunction(LossFunctions.LossFunction.SQUARED_LOSS) 
             .learningRate(1e-1f) // Backprop step size
             .momentum(0.9) // Speed of modifying learning rate
             .regularization(true) // Prevents overfitting
             .l2(2e-4) // Regularization type L2
-            // Calculates gradients
             .optimizationAlgo(OptimizationAlgorithm.LBFGS) 
+            // ^^ Calculates gradients
             .constrainGradientToUnitNorm(true)
             .build();
         Layer model = LayerFactories.getFactory(conf.getLayer()).create(conf);
