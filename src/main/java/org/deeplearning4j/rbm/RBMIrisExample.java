@@ -39,46 +39,46 @@ public class RBMIrisExample {
         Nd4j.MAX_SLICES_TO_PRINT = -1;
         Nd4j.MAX_ELEMENTS_PER_SLICE = -1;
 
-        final int numRows = 4;
-        final int numColumns = 1;
-        int outputNum = 3;
-        int numSamples = 150;
-        int batchSize = 150;
-        int iterations = 100;
-        int seed = 123;
-        int listenerFreq = iterations/5;
+    final int numRows = 4;
+    final int numColumns = 1;
+    int outputNum = 3;
+    int numSamples = 150;
+    int batchSize = 150;
+    int iterations = 100;
+    int seed = 123;
+    int listenerFreq = iterations/5;
 
-        log.info("Load data....");
-        DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
-        // Loads data into generator and format consumable for NN
-        DataSet iris = iter.next(); 
+    log.info("Load data....");
+    DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
+    // Loads data into generator and format consumable for NN
+    DataSet iris = iter.next(); 
 
-        iris.normalizeZeroMeanZeroUnitVariance();
+    iris.normalizeZeroMeanZeroUnitVariance();
 
-        log.info("Build model....");
-        NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
-            // Gaussian for visible; Rectified for hidden
-            // Set contrastive divergence to 1
-            .layer(new RBM.Builder(HiddenUnit.RECTIFIED, VisibleUnit.GAUSSIAN, 1)
-                .nIn(numRows * numColumns) // Input nodes
-                .nOut(outputNum) // Output nodes
-                .activation("tanh") // Activation function type
-                .build())
-            .seed(seed) // Locks in weight initialization for tuning
-            .weightInit(WeightInit.DISTRIBUTION) // Weight initialization
-            .dist(new UniformDistribution(0, 1)) 
-            // ^^ Weight distribution curve mean and st. deviation
-            .lossFunction(LossFunctions.LossFunction.SQUARED_LOSS) 
-            .learningRate(1e-1f) // Backprop step size
-            .momentum(0.9) // Speed of modifying learning rate
-            .regularization(true) // Prevents overfitting
-            .l2(2e-4) // Regularization type L2
-            .optimizationAlgo(OptimizationAlgorithm.LBFGS) 
-            // ^^ Calculates gradients
-            .constrainGradientToUnitNorm(true)
-            .build();
-        Layer model = LayerFactories.getFactory(conf.getLayer()).create(conf);
-        model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
+    log.info("Build model....");
+    NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
+        // Gaussian for visible; Rectified for hidden
+        // Set contrastive divergence to 1
+        .layer(new RBM.Builder(HiddenUnit.RECTIFIED, VisibleUnit.GAUSSIAN, 1)
+            .nIn(numRows * numColumns) // Input nodes
+            .nOut(outputNum) // Output nodes
+            .activation("tanh") // Activation function type
+            .build())
+        .seed(seed) // Locks in weight initialization for tuning
+        .weightInit(WeightInit.DISTRIBUTION) // Weight initialization
+        .dist(new UniformDistribution(0, 1)) 
+        // ^^ Weight distribution curve mean and st. deviation
+        .lossFunction(LossFunctions.LossFunction.SQUARED_LOSS) 
+        .learningRate(1e-1f) // Backprop step size
+        .momentum(0.9) // Speed of modifying learning rate
+        .regularization(true) // Prevents overfitting
+        .l2(2e-4) // Regularization type L2
+        .optimizationAlgo(OptimizationAlgorithm.LBFGS) 
+        // ^^ Calculates gradients
+        .constrainGradientToUnitNorm(true)
+        .build();
+    Layer model = LayerFactories.getFactory(conf.getLayer()).create(conf);
+    model.setListeners(Arrays.asList((IterationListener) new ScoreIterationListener(listenerFreq)));
 
         log.info("Evaluate weights....");
         INDArray w = model.getParam(DefaultParamInitializer.WEIGHT_KEY);
