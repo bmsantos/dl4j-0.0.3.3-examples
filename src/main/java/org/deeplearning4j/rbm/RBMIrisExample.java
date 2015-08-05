@@ -50,13 +50,14 @@ public class RBMIrisExample {
 
         log.info("Load data....");
         DataSetIterator iter = new IrisDataSetIterator(batchSize, numSamples);
-        DataSet iris = iter.next(); // Loads data into generator and format consumable for NN
+        // Loads data into generator and format consumable for NN
+        DataSet iris = iter.next(); 
 
         iris.normalizeZeroMeanZeroUnitVariance();
 
         log.info("Build model....");
         NeuralNetConfiguration conf = new NeuralNetConfiguration.Builder()
-                // Gaussian for the visible layer and Rectify for the hidden layer
+                // Gaussian for visible; Rectified for hidden
                 // Set contrastive divergence to 1
                 .layer(new RBM.Builder(HiddenUnit.RECTIFIED, VisibleUnit.GAUSSIAN, 1)
                         .nIn(numRows * numColumns) // Input nodes
@@ -89,7 +90,6 @@ public class RBMIrisExample {
         plotter.plotNetworkGradient(model, model.gradient());
     }
 
-
-    // A single layer just learns features and is not supervised learning.
+    // A single layer learns features unsupervised.
 
 }
