@@ -73,7 +73,8 @@ public class RBMIrisExample {
             .momentum(0.9) // Speed of modifying learning rate
             .regularization(true) // Prevents overfitting
             .l2(2e-4) // Regularization type L2
-            .optimizationAlgo(OptimizationAlgorithm.LBFGS) // Calc's gradients
+            // Calculates gradients
+            .optimizationAlgo(OptimizationAlgorithm.LBFGS) 
             .constrainGradientToUnitNorm(true)
             .build();
         Layer model = LayerFactories.getFactory(conf.getLayer()).create(conf);
