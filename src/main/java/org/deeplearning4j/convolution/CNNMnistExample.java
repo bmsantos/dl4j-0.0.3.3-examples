@@ -8,17 +8,13 @@ import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
-import org.deeplearning4j.nn.conf.override.ClassifierOverride;
-import org.deeplearning4j.nn.conf.override.ConfOverride;
-import org.deeplearning4j.nn.layers.convolution.preprocessor.ConvolutionInputPreProcessor;
-import org.deeplearning4j.nn.layers.convolution.preprocessor.ConvolutionPostProcessor;
+import org.deeplearning4j.nn.conf.preprocessor.CnnToFeedForwardPreProcessor;
+import org.deeplearning4j.nn.conf.preprocessor.FeedForwardToCnnPreProcessor;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.deeplearning4j.plot.iterationlistener.NeuralNetPlotterIterationListener;
-import org.deeplearning4j.plot.iterationlistener.PlotFiltersIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.convolution.Convolution;
 import org.nd4j.linalg.dataset.DataSet;
@@ -74,7 +70,7 @@ public class CNNMnistExample {
                         .nIn(numRows * numColumns)
                         .nOut(8)
                         .build())
-                .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.poolingType.MAX, new int[] {2,2})
+                .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX, new int[] {2,2})
                         .build())
                 .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .nIn(8)
@@ -82,8 +78,8 @@ public class CNNMnistExample {
                         .activation("softmax")
                         .build())
                 .hiddenLayerSizes(50)
-                .inputPreProcessor(0, new ConvolutionInputPreProcessor(numRows, numColumns))
-                .preProcessor(1, new ConvolutionPostProcessor())
+                .inputPreProcessor(0, new FeedForwardToCnnPreProcessor(numRows, numColumns, 1))
+                .inputPreProcessor(2, new CnnToFeedForwardPreProcessor())
                 .build();
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();

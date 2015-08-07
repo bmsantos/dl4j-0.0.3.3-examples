@@ -62,7 +62,7 @@ public class DBNFullMnistExample {
                 .layer(2, new RBM.Builder().nIn(250).nOut(200).build())
                 .layer(3, new OutputLayer.Builder(LossFunction.RMSE_XENT).activation("softmax")
                 	.nIn(200).nOut(outputNum).build())
-            	.pretrain(true).backward(false)
+		.pretrain(true).backprop(false)
                 .build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);

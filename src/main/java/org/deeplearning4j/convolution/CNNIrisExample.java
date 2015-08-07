@@ -3,19 +3,13 @@ package org.deeplearning4j.convolution;
 import org.deeplearning4j.datasets.iterator.DataSetIterator;
 import org.deeplearning4j.datasets.iterator.impl.IrisDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
-import org.deeplearning4j.nn.api.LayerFactory;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
-import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
-import org.deeplearning4j.nn.conf.override.ClassifierOverride;
-import org.deeplearning4j.nn.conf.override.ConfOverride;
-import org.deeplearning4j.nn.layers.convolution.ConvolutionDownSampleLayer;
-import org.deeplearning4j.nn.layers.convolution.preprocessor.ConvolutionInputPreProcessor;
-import org.deeplearning4j.nn.layers.convolution.preprocessor.ConvolutionPostProcessor;
-import org.deeplearning4j.nn.layers.factory.LayerFactories;
+import org.deeplearning4j.nn.conf.preprocessor.CnnToFeedForwardPreProcessor;
+import org.deeplearning4j.nn.conf.preprocessor.FeedForwardToCnnPreProcessor;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
@@ -25,13 +19,11 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.convolution.Convolution;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.SplitTestAndTrain;
-import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Random;
 
 /**
@@ -77,7 +69,7 @@ public class CNNIrisExample {
                 .useDropConnect(true)
                 .list(2)
                 .layer(0, new ConvolutionLayer.Builder(new int[]{2, 2}, Convolution.Type.VALID)
-                        .nIn(numRows * numColumns)
+                        .nIn(1)
                         .nOut(8)
                         .activation("relu")
                         .build())
@@ -87,8 +79,8 @@ public class CNNIrisExample {
                         .activation("softmax")
                         .build())
                 .hiddenLayerSizes(4)
-                .inputPreProcessor(0, new ConvolutionInputPreProcessor(numRows, numColumns))
-                .preProcessor(0, new ConvolutionPostProcessor())
+                .inputPreProcessor(0, new FeedForwardToCnnPreProcessor(numRows, numColumns, 1))
+                .inputPreProcessor(1, new CnnToFeedForwardPreProcessor())
                 .build();
 
         log.info("Build model....");

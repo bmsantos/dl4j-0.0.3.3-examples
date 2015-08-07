@@ -61,7 +61,7 @@ public class MLPBackpropIrisExample {
                 .layer(1, new DenseLayer.Builder().nIn(3).nOut(2).build())
                 .layer(2, new OutputLayer.Builder(LossFunction.MCXENT).activation("softmax")
                 		.nIn(2).nOut(outputNum).build())
-                .backward(true).pretrain(false)
+                .backprop(true).pretrain(false)
                 .build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
