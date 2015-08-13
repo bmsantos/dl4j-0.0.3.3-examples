@@ -68,7 +68,7 @@ public class CNNIrisExample {
                 .regularization(true)
                 .useDropConnect(true)
                 .list(2)
-                .layer(0, new ConvolutionLayer.Builder(new int[]{2, 2}, Convolution.Type.VALID)
+                .layer(0, new ConvolutionLayer.Builder(new int[]{2, 2}, new int[]{Convolution.Type.VALID.ordinal()})
                         .nIn(1)
                         .nOut(8)
                         .activation("relu")

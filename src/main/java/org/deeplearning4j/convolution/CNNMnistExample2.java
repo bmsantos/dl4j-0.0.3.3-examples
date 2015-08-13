@@ -79,7 +79,7 @@ public class CNNMnistExample2 {
                 .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .constrainGradientToUnitNorm(true)
                 .list(3)
-                .layer(0, new ConvolutionLayer.Builder(new int[]{9, 9}, Convolution.Type.VALID)
+                .layer(0, new ConvolutionLayer.Builder(new int[]{9, 9}, new int[]{Convolution.Type.VALID.ordinal()})
                         .nIn(numRows * numColumns)
                         .nOut(8)
                         .build())
